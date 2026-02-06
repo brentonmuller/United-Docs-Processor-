@@ -2,69 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cbus & Media Super Assistant v2.5</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cbus Assistant Pro - Mobile Ready</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root { --cbus-green: #009354; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f7; padding: 20px; }
-        .card { background: white; max-width: 850px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--cbus-green); }
-        h2 { color: var(--cbus-green); text-align: center; margin-bottom: 25px; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        label { display: block; font-size: 11px; font-weight: bold; color: #555; text-transform: uppercase; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-        .section-header { grid-column: span 3; color: var(--cbus-green); font-size: 13px; border-bottom: 1px solid #eee; margin-top: 15px; padding-bottom: 5px; font-weight: bold; }
-        .upload-zone { border: 2px dashed var(--cbus-green); padding: 30px; text-align: center; margin-top: 20px; background: #f4fbf7; border-radius: 8px; cursor: pointer; }
-        .btn-run { width: 100%; padding: 18px; background: var(--cbus-green); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        #status { text-align: center; margin-top: 15px; font-weight: bold; color: var(--cbus-green); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f4f7; margin: 0; padding: 10px; }
+        .card { background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-top: 6px solid var(--cbus-green); }
+        h2 { color: var(--cbus-green); text-align: center; font-size: 22px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .full-width { grid-column: span 2; }
+        label { display: block; font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 4px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .section-header { grid-column: span 2; color: var(--cbus-green); font-size: 12px; border-bottom: 1px solid #eee; margin-top: 15px; padding-bottom: 5px; font-weight: bold; }
+        
+        .form-selector { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-top: 20px; border: 1px solid #ddd; }
+        .form-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .form-item input[type="checkbox"] { width: 22px; height: 22px; margin-right: 12px; }
+        
+        .btn-run { width: 100%; padding: 20px; background: var(--cbus-green); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; -webkit-appearance: none; }
+        #status { text-align: center; margin-top: 15px; font-weight: bold; color: var(--cbus-green); font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>🏗️ Cbus Assistant Master (Forensic Build)</h2>
+    <h2>🏗️ Cbus GitHub Assistant</h2>
     
     <div class="grid">
-        <div class="section-header">1. Member Info</div>
-        <div><label>Member Number</label><input type="text" id="m_no"></div>
+        <div class="section-header">Member Info</div>
+        <div class="full-width"><label>Member Number</label><input type="text" id="m_no"></div>
         <div><label>Given Name(s)</label><input type="text" id="gn"></div>
         <div><label>Family Name</label><input type="text" id="fn"></div>
-        <div><label>Date of Birth</label><input type="date" id="dob"></div>
-        <div style="grid-column: span 2;"><label>Tax File Number</label><input type="text" id="tfn"></div>
+        <div class="full-width"><label>Date of Birth</label><input type="date" id="dob"></div>
+        <div class="full-width"><label>Tax File Number</label><input type="text" id="tfn" inputmode="numeric"></div>
 
-        <div class="section-header">2. Contact & Address</div>
-        <div><label>Mobile</label><input type="text" id="mob"></div>
-        <div style="grid-column: span 2;"><label>Email Address</label><input type="email" id="eml"></div>
-        <div style="grid-column: span 3;"><label>Street Address</label><input type="text" id="addr"></div>
+        <div class="section-header">Contact & Address</div>
+        <div class="full-width"><label>Mobile</label><input type="tel" id="mob"></div>
+        <div class="full-width"><label>Email Address</label><input type="email" id="eml"></div>
+        <div class="full-width"><label>Street Address</label><input type="text" id="addr"></div>
         <div><label>Suburb</label><input type="text" id="sub"></div>
-        <div><label>State</label><input type="text" id="st" value="VIC"></div>
         <div><label>Postcode</label><input type="text" id="pc"></div>
     </div>
 
-    <div class="upload-zone" onclick="document.getElementById('pdfFiles').click()">
-        <strong>📁 Click to Select PDF Forms from your PC</strong>
-        <input type="file" id="pdfFiles" multiple accept=".pdf" style="display:none;" onchange="updateStatus()">
-        <div id="fileInfo" style="font-size: 12px; margin-top: 5px; color: #666;">No files selected</div>
+    <div class="form-selector">
+        <label>Select Forms to Generate:</label>
+        <div id="formList">
+            <label class="form-item"><input type="checkbox" value="Change-Income-Stream-Details-Form.pdf"> Income Stream Details</label>
+            <label class="form-item"><input type="checkbox" value="Change-Details-Form.pdf"> Change Details</label>
+            <label class="form-item"><input type="checkbox" value="Change-Occupation-Form.pdf"> Change Occupation</label>
+            <label class="form-item"><input type="checkbox" value="App-Increase-Cover-Living-Events.pdf"> Increase Cover</label>
+            <label class="form-item"><input type="checkbox" value="Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> Insurance Transfer</label>
+            <label class="form-item"><input type="checkbox" value="Binding-Death-Benefit-Nomination-Form.pdf"> Death Benefit Nom</label>
+            <label class="form-item"><input type="checkbox" value="Combine-Form.pdf"> Combine Super</label>
+            <label class="form-item"><input type="checkbox" value="super-withdrawal-form.pdf"> Super Withdrawal</label>
+            <label class="form-item"><input type="checkbox" value="I-want-my-super-paid-into-Cbus.pdf"> Pay into Cbus</label>
+        </div>
     </div>
 
-    <button class="btn-run" onclick="processBatch()">🚀 Process Bundle</button>
+    <button class="btn-run" onclick="processGitHubBatch()">🚀 Generate Bundle</button>
     <div id="status"></div>
 </div>
 
 <script>
-    function updateStatus() {
-        const count = document.getElementById('pdfFiles').files.length;
-        document.getElementById('fileInfo').innerText = `${count} files ready to process.`;
-    }
-
-    async function processBatch() {
-        const files = Array.from(document.getElementById('pdfFiles').files);
-        if (files.length === 0) return alert("Please upload the PDF forms first.");
+    async function processGitHubBatch() {
+        const selected = Array.from(document.querySelectorAll('#formList input:checked'));
+        if (selected.length === 0) return alert("Select at least one form.");
         
         const status = document.getElementById('status');
         const zip = new JSZip();
 
-        // Prepare Date & TFN Data
+        // Data processing
         const dobVal = document.getElementById('dob').value;
         const [y, m, d] = dobVal ? dobVal.split('-') : ['', '', ''];
         const t = document.getElementById('tfn').value.replace(/\s/g, '');
@@ -82,76 +91,62 @@
             eml: document.getElementById('eml').value,
             addr: document.getElementById('addr').value,
             sub: document.getElementById('sub').value,
-            st: document.getElementById('st').value,
             pc: document.getElementById('pc').value
         };
 
         try {
-            for (const file of files) {
-                status.innerText = `✍️ Applying Forensic Map to: ${file.name}`;
-                const bytes = await file.arrayBuffer();
-                const pdfDoc = await PDFLib.PDFDocument.load(bytes);
+            for (const item of selected) {
+                const fileName = item.value;
+                status.innerText = `Fetching: ${fileName}...`;
+                
+                // CRITICAL: Fetches from your GitHub forms folder
+                const response = await fetch(`./forms/Cbus/${fileName}`);
+                if (!response.ok) throw new Error(`Could not find ${fileName} in /forms/Cbus/`);
+                
+                const arrayBuffer = await response.arrayBuffer();
+                const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
                 const form = pdfDoc.getForm();
 
-                // THE COMPREHENSIVE MAPPING (Matches your Diagnostic Deep Dive)
-                const masterMap = {
-                    // Identification
-                    'Cbus member number': data.mem, 'Member Number': data.mem, 'Member number': data.mem, 'MEMBER number': data.mem, 
-                    '8039653-member_number': data.mem, 'Media Super member number': data.mem, '8138573-member_number': data.mem,
-                    'Given names': data.gn, 'First names': data.gn, 'Given name(s)': data.gn, '8039653-Given_Names': data.gn, '8138573-Given_Names': data.gn,
-                    'Family name': data.fn, '8039653-Family_Name': data.fn, '8138573-Family_Name': data.fn,
-                    
-                    // Dates
+                // THE FORENSIC MAP
+                const map = {
+                    'Cbus member number': data.mem, 'Member number': data.mem, '8138573-member_number': data.mem, '8039653-member_number': data.mem,
+                    'Given names': data.gn, 'Given name(s)': data.gn, '8138573-Given_Names': data.gn, '8039653-Given_Names': data.gn,
+                    'Family name': data.fn, '8138573-Family_Name': data.fn, '8039653-Family_Name': data.fn,
                     'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
-                    '2B - Date of birth day': d, '2B - Date of birth month': m, '2B - Date of birth year': y,
-
-                    // Forensic Address IDs
-                    'Street Number Name RES': data.addr, 'Street Number and Name': data.addr, 'Street Number': data.addr, 'Street Name': data.addr,
-                    'Residential address (compulsory)': data.addr, 'Residential address': data.addr, 'residential address': data.addr,
-                    'Suburb/town RES': data.sub, 'Suburb/town': data.sub, 'step 2 - resid suburb/town': data.sub,
-                    'State RES': data.st, 'State': data.st, 'step 2 - resid state': data.st,
-                    'Postcode RES': data.pc, 'Postcode': data.pc, 'step 2 - resid postcode': data.pc,
-
-                    // Forensic Contact IDs
-                    'mobile1': data.mob, 'mobile': data.mob, 'Telephone mobile': data.mob, 'step 2 - Telephone mobile': data.mob,
-                    'Email address': data.eml, 'Email Address': data.eml, 'email address': data.eml, 'Step 2 - email address': data.eml,
-                    'Telephone home': data.mob, 'Telephone home1': data.mob,
-
-                    // TFN
+                    'Street Number Name RES': data.addr, 'Street Name': data.addr, 'Residential address': data.addr, 'Street Number and Name': data.addr,
+                    'Suburb/town': data.sub, 'Postcode': data.pc,
+                    'mobile1': data.mob, 'mobile': data.mob, 'Telephone mobile': data.mob,
+                    'Email address': data.eml, 'email address': data.eml,
                     'TFN1': t.substring(0,3), 'TFN2': t.substring(3,6), 'TFN3': t.substring(6,9),
-                    '8039653-TFN1': t.substring(0,3), '8039653-TFN2': t.substring(3,6), '8039653-TFN3': t.substring(6,9),
-                    '8138573-TFN1': t.substring(0,3), '8138573-TFN2': t.substring(3,6), '8138573-TFN3': t.substring(6,9),
-
-                    // Signature & Form Dates
                     'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY,
-                    'Step 6 - DD': curD, 'Step 6 - MM': curM, 'Step 6 - YYYY': curYYYY,
-                    'Step 4 - DD': curD, 'Step 4 - MM': curM, 'Step 4 - YYYY': curYYYY,
                     'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
-                    'Declaration DD': curD, 'Declaration MM': curM, 'Declaration YY': curYY,
-                    '8039778-Sign_Date_Day': curD, '8039778-Sign_Date_Month': curM, '8039778-Sign_Date_Year': curYYYY,
-                    '12 form 1 sign DD': curD, '12 form 1 sign MM': curM, '12 form 1 sign YY': curYY,
                     '8138576-Sign_Date_Day': curD, '8138576-Sign_Date_Month': curM, '8138576-Sign_Date_Year': curYYYY
                 };
 
-                Object.entries(masterMap).forEach(([field, val]) => {
-                    try { form.getTextField(field).setText(val); } catch(e) {}
+                Object.keys(map).forEach(key => {
+                    try { form.getTextField(key).setText(map[key]); } catch(e) {}
                 });
 
                 const pdfBytes = await pdfDoc.save();
-                zip.file(`Filled_${file.name}`, pdfBytes);
+                zip.file(`Filled_${fileName}`, pdfBytes);
             }
 
-            status.innerText = "📦 Zipping Files...";
+            status.innerText = "📦 Creating ZIP...";
             const blob = await zip.generateAsync({type:"blob"});
             const url = URL.createObjectURL(blob);
+            
+            // Mobile-friendly download trigger
             const a = document.createElement('a');
-            a.href = url; a.download = `Cbus_Bundle_${curYYYY}.zip`;
+            a.href = url;
+            a.download = `Cbus_Mobile_Batch.zip`;
+            document.body.appendChild(a);
             a.click();
-            status.innerText = "✅ Done! Check your downloads.";
-
+            document.body.removeChild(a);
+            
+            status.innerText = "✅ Download Started!";
         } catch (err) {
+            status.innerText = "❌ Error: " + err.message;
             console.error(err);
-            status.innerText = "❌ Forensic Error: " + err.message;
         }
     }
 </script>
