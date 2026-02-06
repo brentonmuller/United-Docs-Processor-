@@ -3,80 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cbus Assistant Pro - Mobile Ready</title>
+    <title>Cbus Assistant Pro v2.8</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        :root { --cbus-green: #009354; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f4f7; margin: 0; padding: 10px; }
-        .card { background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-top: 6px solid var(--cbus-green); }
-        h2 { color: var(--cbus-green); text-align: center; font-size: 22px; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .full-width { grid-column: span 2; }
-        label { display: block; font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        .section-header { grid-column: span 2; color: var(--cbus-green); font-size: 12px; border-bottom: 1px solid #eee; margin-top: 15px; padding-bottom: 5px; font-weight: bold; }
-        
-        .form-selector { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-top: 20px; border: 1px solid #ddd; }
-        .form-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; }
-        .form-item input[type="checkbox"] { width: 22px; height: 22px; margin-right: 12px; }
-        
-        .btn-run { width: 100%; padding: 20px; background: var(--cbus-green); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; -webkit-appearance: none; }
-        #status { text-align: center; margin-top: 15px; font-weight: bold; color: var(--cbus-green); font-size: 14px; }
+        :root { --cbus: #009354; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #f0f4f7; padding: 15px; margin: 0; }
+        .card { background: white; max-width: 650px; margin: 0 auto; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid var(--cbus); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .full { grid-column: span 2; }
+        label { display: block; font-size: 11px; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+        input { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+        .form-selector { margin-top: 25px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd; }
+        .form-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .form-item input[type="checkbox"] { width: 28px; height: 28px; margin-right: 15px; accent-color: var(--cbus); }
+        .btn-run { width: 100%; padding: 20px; background: var(--cbus); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 25px; cursor: pointer; }
+        #status { text-align: center; margin-top: 20px; font-weight: bold; color: var(--cbus); font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>🏗️ Cbus GitHub Assistant</h2>
+    <h2 style="color:var(--cbus); text-align:center; margin-top:0;">🏗️ Cbus Assistant v2.8</h2>
     
     <div class="grid">
-        <div class="section-header">Member Info</div>
-        <div class="full-width"><label>Member Number</label><input type="text" id="m_no"></div>
+        <div class="full"><label>Member Number</label><input type="text" id="m_no"></div>
         <div><label>Given Name(s)</label><input type="text" id="gn"></div>
         <div><label>Family Name</label><input type="text" id="fn"></div>
-        <div class="full-width"><label>Date of Birth</label><input type="date" id="dob"></div>
-        <div class="full-width"><label>Tax File Number</label><input type="text" id="tfn" inputmode="numeric"></div>
-
-        <div class="section-header">Contact & Address</div>
-        <div class="full-width"><label>Mobile</label><input type="tel" id="mob"></div>
-        <div class="full-width"><label>Email Address</label><input type="email" id="eml"></div>
-        <div class="full-width"><label>Street Address</label><input type="text" id="addr"></div>
+        <div class="full"><label>Date of Birth</label><input type="date" id="dob"></div>
+        <div class="full"><label>Tax File Number</label><input type="tel" id="tfn" placeholder="000 000 000"></div>
+        <div class="full"><label>Street Address</label><input type="text" id="addr"></div>
         <div><label>Suburb</label><input type="text" id="sub"></div>
-        <div><label>Postcode</label><input type="text" id="pc"></div>
+        <div><label>Postcode</label><input type="tel" id="pc"></div>
     </div>
 
     <div class="form-selector">
-        <label>Select Forms to Generate:</label>
+        <label>Select Required Forms:</label>
         <div id="formList">
             <label class="form-item"><input type="checkbox" value="Change-Income-Stream-Details-Form.pdf"> Income Stream Details</label>
             <label class="form-item"><input type="checkbox" value="Change-Details-Form.pdf"> Change Details</label>
             <label class="form-item"><input type="checkbox" value="Change-Occupation-Form.pdf"> Change Occupation</label>
-            <label class="form-item"><input type="checkbox" value="App-Increase-Cover-Living-Events.pdf"> Increase Cover</label>
-            <label class="form-item"><input type="checkbox" value="Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> Insurance Transfer</label>
-            <label class="form-item"><input type="checkbox" value="Binding-Death-Benefit-Nomination-Form.pdf"> Death Benefit Nom</label>
             <label class="form-item"><input type="checkbox" value="Combine-Form.pdf"> Combine Super</label>
             <label class="form-item"><input type="checkbox" value="super-withdrawal-form.pdf"> Super Withdrawal</label>
-            <label class="form-item"><input type="checkbox" value="I-want-my-super-paid-into-Cbus.pdf"> Pay into Cbus</label>
+            <label class="form-item"><input type="checkbox" value="Binding-Death-Benefit-Nomination-Form.pdf"> Death Benefit Nomination</label>
+            <label class="form-item"><input type="checkbox" value="join-industry-form.pdf"> Join Industry Form</label>
         </div>
     </div>
 
-    <button class="btn-run" onclick="processGitHubBatch()">🚀 Generate Bundle</button>
+    <button class="btn-run" onclick="processBatch()">🚀 Generate Bundle</button>
     <div id="status"></div>
 </div>
 
 <script>
-    async function processGitHubBatch() {
+    async function processBatch() {
         const selected = Array.from(document.querySelectorAll('#formList input:checked'));
-        if (selected.length === 0) return alert("Select at least one form.");
-        
+        if (selected.length === 0) return alert("Please select at least one form.");
+
         const status = document.getElementById('status');
         const zip = new JSZip();
 
-        // Data processing
+        // 1. Data Processing
         const dobVal = document.getElementById('dob').value;
         const [y, m, d] = dobVal ? dobVal.split('-') : ['', '', ''];
-        const t = document.getElementById('tfn').value.replace(/\s/g, '');
+        const tfnRaw = document.getElementById('tfn').value.replace(/\s/g, '');
         const now = new Date();
         const curD = String(now.getDate()).padStart(2, '0');
         const curM = String(now.getMonth() + 1).padStart(2, '0');
@@ -84,11 +73,9 @@
         const curYY = curYYYY.substring(2);
 
         const data = {
-            mem: document.getElementById('m_no').value,
+            m: document.getElementById('m_no').value,
             gn: document.getElementById('gn').value,
             fn: document.getElementById('fn').value,
-            mob: document.getElementById('mob').value,
-            eml: document.getElementById('eml').value,
             addr: document.getElementById('addr').value,
             sub: document.getElementById('sub').value,
             pc: document.getElementById('pc').value
@@ -97,55 +84,57 @@
         try {
             for (const item of selected) {
                 const fileName = item.value;
-                status.innerText = `Fetching: ${fileName}...`;
                 
-                // CRITICAL: Fetches from your GitHub forms folder
-                const response = await fetch(`./forms/Cbus/${fileName}`);
-                if (!response.ok) throw new Error(`Could not find ${fileName} in /forms/Cbus/`);
+                // CRITICAL: Folder name is set to CBUS (Capitalized as requested)
+                // Cache buster ?t= ensures mobile devices get the latest file
+                const pdfUrl = `./forms/CBUS/${fileName}?t=${Date.now()}`;
                 
+                status.innerText = `🔄 Fetching: ${fileName}...`;
+                const response = await fetch(pdfUrl);
+                
+                if (!response.ok) throw new Error(`404: File not found at ${pdfUrl}`);
+
                 const arrayBuffer = await response.arrayBuffer();
                 const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
                 const form = pdfDoc.getForm();
 
-                // THE FORENSIC MAP
+                // 2. APPLY FORENSIC FIELD MAP
                 const map = {
-                    'Cbus member number': data.mem, 'Member number': data.mem, '8138573-member_number': data.mem, '8039653-member_number': data.mem,
-                    'Given names': data.gn, 'Given name(s)': data.gn, '8138573-Given_Names': data.gn, '8039653-Given_Names': data.gn,
-                    'Family name': data.fn, '8138573-Family_Name': data.fn, '8039653-Family_Name': data.fn,
+                    'Cbus member number': data.m, 'Member number': data.m, '8039653-member_number': data.m,
+                    'Given names': data.gn, 'Given name(s)': data.gn, 'First names': data.gn, '8039653-Given_Names': data.gn,
+                    'Family name': data.fn, '8039653-Family_Name': data.fn,
                     'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
-                    'Street Number Name RES': data.addr, 'Street Name': data.addr, 'Residential address': data.addr, 'Street Number and Name': data.addr,
+                    'Street Number Name RES': data.addr, 'Street Name': data.addr, 'Residential address': data.addr,
                     'Suburb/town': data.sub, 'Postcode': data.pc,
-                    'mobile1': data.mob, 'mobile': data.mob, 'Telephone mobile': data.mob,
-                    'Email address': data.eml, 'email address': data.eml,
-                    'TFN1': t.substring(0,3), 'TFN2': t.substring(3,6), 'TFN3': t.substring(6,9),
+                    'TFN1': tfnRaw.substring(0,3), 'TFN2': tfnRaw.substring(3,6), 'TFN3': tfnRaw.substring(6,9),
                     'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY,
-                    'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
-                    '8138576-Sign_Date_Day': curD, '8138576-Sign_Date_Month': curM, '8138576-Sign_Date_Year': curYYYY
+                    'Step 6 - DD': curD, 'Step 6 - MM': curM, 'Step 6 - YYYY': curYYYY,
+                    'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curYY
                 };
 
-                Object.keys(map).forEach(key => {
-                    try { form.getTextField(key).setText(map[key]); } catch(e) {}
+                Object.entries(map).forEach(([key, val]) => {
+                    try { form.getTextField(key).setText(val); } catch(e) {}
                 });
 
                 const pdfBytes = await pdfDoc.save();
                 zip.file(`Filled_${fileName}`, pdfBytes);
             }
 
-            status.innerText = "📦 Creating ZIP...";
+            status.innerText = "📦 Creating ZIP Bundle...";
             const blob = await zip.generateAsync({type:"blob"});
             const url = URL.createObjectURL(blob);
             
-            // Mobile-friendly download trigger
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Cbus_Mobile_Batch.zip`;
+            a.download = `Cbus_Mobile_Bundle_${curYYYY}.zip`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             
-            status.innerText = "✅ Download Started!";
+            status.innerText = "✅ Success! Check your downloads.";
         } catch (err) {
-            status.innerText = "❌ Error: " + err.message;
+            status.style.color = "red";
+            status.innerText = `❌ Error: ${err.message}`;
             console.error(err);
         }
     }
