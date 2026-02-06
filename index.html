@@ -2,44 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cbus & Media Super Assistant v2.3</title>
+    <title>Cbus & Media Super Assistant v2.4</title>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f4f7; padding: 20px; }
-        .card { background: white; max-width: 750px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-top: 8px solid #009354; }
+        .card { background: white; max-width: 800px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.1); border-top: 8px solid #009354; }
         h2 { color: #009354; text-align: center; margin-bottom: 25px; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         label { display: block; font-size: 11px; font-weight: bold; color: #555; text-transform: uppercase; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input, select { width: 100%; padding: 11px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
         .form-section { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #ddd; }
-        .form-item { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
-        .form-item input { width: auto; margin-right: 12px; }
-        button { width: 100%; padding: 18px; background: #009354; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .form-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+        .form-row input { width: auto; margin-right: 12px; }
+        .btn-run { width: 100%; padding: 18px; background: #009354; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; }
         #status { text-align: center; margin-top: 15px; font-weight: bold; color: #009354; }
-        .section-title { grid-column: span 3; color: #009354; font-size: 13px; border-bottom: 1px solid #eee; margin-top: 10px; padding-bottom: 5px; }
+        .section-header { grid-column: span 3; color: #009354; font-size: 13px; border-bottom: 1px solid #eee; margin-top: 15px; padding-bottom: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="auth" class="card" style="text-align:center;">
-    <h2>🔒 Secure Entry</h2>
-    <input type="password" id="pin" placeholder="Enter PIN" style="width:150px; text-align:center; font-size:20px; margin-bottom:10px;">
-    <button onclick="unlock()" style="width:150px;">Unlock</button>
-</div>
-
-<div id="app" class="card" style="display:none;">
-    <h2>🏗️ Cbus Assistant Pro</h2>
+<div id="app" class="card">
+    <h2>🏗️ Cbus Assistant Pro v2.4</h2>
     
     <div class="grid">
-        <div class="section-title">Personal Details</div>
-        <div><label>Member No.</label><input type="text" id="m_no"></div>
+        <div class="section-header">Member Identification</div>
+        <div><label>Member Number</label><input type="text" id="m_no"></div>
         <div><label>Given Name(s)</label><input type="text" id="g_name"></div>
         <div><label>Family Name</label><input type="text" id="f_name"></div>
         <div><label>Date of Birth</label><input type="date" id="dob"></div>
         <div style="grid-column: span 2;"><label>Tax File Number</label><input type="text" id="tfn"></div>
 
-        <div class="section-title">Contact & Address</div>
+        <div class="section-header">Contact & Residential Address</div>
         <div><label>Mobile</label><input type="text" id="mob"></div>
         <div style="grid-column: span 2;"><label>Email Address</label><input type="email" id="eml"></div>
         <div style="grid-column: span 3;"><label>Street Address</label><input type="text" id="addr"></div>
@@ -49,100 +43,100 @@
     </div>
 
     <div class="form-section">
-        <label>Select All 11 Forms to Fill:</label>
+        <label>Select All 11 Forms to Bundle:</label>
         <div id="form-list">
-            <label class="form-item"><input type="checkbox" value="i-want-my-super-paid-into-media-super.pdf"> 1. Media Super Pay-In (Critical Fix)</label>
-            <label class="form-item"><input type="checkbox" value="combine-your-super.pdf"> 2. Combine Your Super</label>
-            <label class="form-item"><input type="checkbox" value="C-join-industry-form.pdf"> 3. Cbus Join Industry</label>
-            <label class="form-item"><input type="checkbox" value="join-industry.pdf"> 4. Media Join Industry</label>
-            <label class="form-item"><input type="checkbox" value="C-super-withdrawal-form.pdf"> 5. Cbus Withdrawal</label>
-            <label class="form-item"><input type="checkbox" value="super-withdrawal-form.pdf"> 6. Media Withdrawal</label>
-            <label class="form-item"><input type="checkbox" value="C-Binding-Death-Benefit-Nomination-Form.pdf"> 7. Cbus Death Nom</label>
-            <label class="form-item"><input type="checkbox" value="binding-death-nomination.pdf"> 8. Media Death Nom</label>
-            <label class="form-item"><input type="checkbox" value="C-Change-Insurance-Form-Industry-Super.pdf"> 9. Cbus Change Insurance</label>
-            <label class="form-item"><input type="checkbox" value="C-Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> 10. Cbus Transfer Insurance</label>
-            <label class="form-item"><input type="checkbox" value="application-transfer-existing-insurance-cover.pdf"> 11. Media Transfer Insurance</label>
+            <label class="form-row"><input type="checkbox" value="i-want-my-super-paid-into-media-super.pdf"> 1. Media Super Pay-In</label>
+            <label class="form-row"><input type="checkbox" value="combine-your-super.pdf"> 2. Combine Your Super</label>
+            <label class="form-row"><input type="checkbox" value="C-join-industry-form.pdf"> 3. Cbus Join Industry</label>
+            <label class="form-row"><input type="checkbox" value="join-industry.pdf"> 4. Media Join Industry</label>
+            <label class="form-row"><input type="checkbox" value="C-super-withdrawal-form.pdf"> 5. Cbus Withdrawal</label>
+            <label class="form-row"><input type="checkbox" value="super-withdrawal-form.pdf"> 6. Media Withdrawal</label>
+            <label class="form-row"><input type="checkbox" value="C-Binding-Death-Benefit-Nomination-Form.pdf"> 7. Cbus Death Nom</label>
+            <label class="form-row"><input type="checkbox" value="binding-death-nomination.pdf"> 8. Media Death Nom</label>
+            <label class="form-row"><input type="checkbox" value="C-Change-Insurance-Form-Industry-Super.pdf"> 9. Cbus Change Insurance</label>
+            <label class="form-row"><input type="checkbox" value="C-Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> 10. Cbus Transfer Insurance</label>
+            <label class="form-row"><input type="checkbox" value="application-transfer-existing-insurance-cover.pdf"> 11. Media Transfer Insurance</label>
         </div>
     </div>
 
-    <button onclick="processBundle()">🚀 Fill & Download v2.3 Bundle</button>
+    <button class="btn-run" onclick="process()">🚀 Fill & Download Bundle</button>
     <div id="status"></div>
 </div>
 
 <script>
-    function unlock() { if(document.getElementById('pin').value === "1234") { document.getElementById('auth').style.display='none'; document.getElementById('app').style.display='block'; } }
-
-    async function processBundle() {
+    async function process() {
         const selected = Array.from(document.querySelectorAll('#form-list input:checked'));
-        if (selected.length === 0) return alert("Select at least one form.");
+        if (selected.length === 0) return alert("Select a form!");
         const status = document.getElementById('status');
         const zip = new JSZip();
+
+        const dob = document.getElementById('dob').value;
+        const [y, m, d] = dob ? dob.split('-') : ['', '', ''];
+        const t = document.getElementById('tfn').value.replace(/\s/g, '');
+        const now = new Date();
+        const curD = String(now.getDate()).padStart(2, '0');
+        const curM = String(now.getMonth() + 1).padStart(2, '0');
+        const curYYYY = String(now.getFullYear());
+        const curYY = curYYYY.substring(2);
+
+        const data = {
+            mem: document.getElementById('m_no').value,
+            gn: document.getElementById('g_name').value,
+            fn: document.getElementById('f_name').value,
+            mob: document.getElementById('mob').value,
+            eml: document.getElementById('eml').value,
+            adr: document.getElementById('addr').value,
+            sub: document.getElementById('sub').value,
+            st: document.getElementById('st').value,
+            pc: document.getElementById('pc').value
+        };
 
         try {
             for (let item of selected) {
                 const fileName = item.value;
-                status.innerText = `Forensic Processing: ${fileName}`;
+                status.innerText = `Filling: ${fileName}`;
                 const resp = await fetch(`./forms/${fileName}`);
                 const bytes = await resp.arrayBuffer();
                 const pdfDoc = await PDFLib.PDFDocument.load(bytes);
                 const form = pdfDoc.getForm();
-                
-                const dob = document.getElementById('dob').value;
-                const [y, m, d] = dob ? dob.split('-') : ['', '', ''];
-                const t = document.getElementById('tfn').value.replace(/\s/g, '');
-                
-                const data = {
-                    mem: document.getElementById('m_no').value,
-                    gn: document.getElementById('g_name').value,
-                    fn: document.getElementById('f_name').value,
-                    mob: document.getElementById('mob').value,
-                    eml: document.getElementById('eml').value,
-                    adr: document.getElementById('addr').value,
-                    sub: document.getElementById('sub').value,
-                    st: document.getElementById('st').value,
-                    pc: document.getElementById('pc').value
-                };
 
-                // THE RESTORED MAPPING - Based exactly on your working file
-                const masterMap = {
-                    // Residential Address - EXACT working keys
-                    'Residential address (compulsory)': data.adr,
-                    'Residential address': data.adr,
-                    'Street Number and Name': data.adr,
-                    'Street Name': data.adr,
+                // COMPREHENSIVE MAP FIXING YOUR GAPS
+                const map = {
+                    // 1. GIVEN NAMES (Restored for Withdrawal & Join)
+                    'Given names': data.gn, 'Given name(s)': data.gn, 'First names': data.gn, '8138573-Given_Names': data.gn, 'Step 1 Given names': data.gn,
                     
-                    // Media Super Pay-In Keys
-                    'Step 1 Given names': data.gn,
-                    'Step 1 Family name': data.fn,
-                    'Step 1 Media Super member number': data.mem,
-                    'Media Super member number': data.mem,
-                    'Media Super member number, if known': data.mem,
-                    'Step 1 Tax file number TFN': t,
+                    // 2. RESIDENTIAL ADDRESS (Restored for Insurance & Combine)
+                    'Residential address (compulsory)': data.adr, 'Residential address': data.adr, 'Street address': data.adr, 'Street Name': data.adr, 'Street Number and Name': data.adr,
+                    
+                    // 3. TAX FILE NUMBER (Full & Split)
+                    'Tax file number': t, 'Tax File Number': t, 'Step 1 Tax file number TFN': t,
+                    'TFN1': t.substring(0,3), 'TFN2': t.substring(3,6), 'TFN3': t.substring(6,9),
+                    '8138573-TFN1': t.substring(0,3), '8138573-TFN2': t.substring(3,6), '8138573-TFN3': t.substring(6,9),
 
-                    // Common Keys
-                    'Given names': data.gn, 'Given name(s)': data.gn,
-                    'Family name': data.fn,
-                    'Member number': data.mem,
+                    // 4. MOBILE (All variations for Combine & Insurance)
+                    'Mobile': data.mob, 'mobile': data.mob, 'mobile1': data.mob, 'Telephone mobile': data.mob, 'Mobile phone': data.mob,
+
+                    // 5. MEMBER NUMBER (Restored for Death Nom & Insurance)
+                    'Member number': data.mem, 'Cbus Super member number, if known': data.mem, 'Media Super member number': data.mem, 'Step 1 Media Super member number': data.mem, '8138573-member_number': data.mem,
+
+                    // 6. EMAIL
+                    'Email address': data.eml, 'Email Address': data.eml,
+
+                    // 7. LOCATION & DOB
                     'Suburb/town': data.sub, 'State': data.st, 'Postcode': data.pc,
-                    'Mobile': data.mob, 'Telephone mobile': data.mob, 'Email address': data.eml,
-                    
-                    // Withdrawal Form Prefixes
-                    '8138573-Given_Names': data.gn, '8138573-Family_Name': data.fn,
-                    '8138573-member_number': data.mem,
-                    '8138573-TFN1': t.substring(0,3), '8138573-TFN2': t.substring(3,6), '8138573-TFN3': t.substring(6,9)
+                    'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
+
+                    // 8. DATE (Signature Section - Fixes "Missing Date" on all forms)
+                    'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY,
+                    'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
+                    'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curYY,
+                    'Join - Declaration DD': curD, 'Join - Declaration MM': curM, 'Join - Declaration YY': curYY,
+                    '8138576-Sign_Date_Day': curD, '8138576-Sign_Date_Month': curM, '8138576-Sign_Date_Year': curYYYY
                 };
 
-                // Apply mapped fields
-                Object.keys(masterMap).forEach(key => {
-                    try { form.getTextField(key).setText(masterMap[key]); } catch(e) {}
+                Object.keys(map).forEach(key => {
+                    try { form.getTextField(key).setText(map[key]); } catch(e) {}
                 });
-
-                // DATE SPLITTING Safety
-                try { 
-                    form.getTextField('Date of birth day').setText(d);
-                    form.getTextField('Date of birth month').setText(m);
-                    form.getTextField('Date of birth year').setText(y);
-                } catch(e) {}
 
                 const saved = await pdfDoc.save();
                 zip.file(`Filled_${fileName}`, saved);
@@ -150,9 +144,9 @@
             const blob = await zip.generateAsync({type:"blob"});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = "Cbus_Media_Master_Fix.zip";
+            a.href = url; a.download = "Cbus_Media_v2.4_Patch.zip";
             a.click();
-            status.innerText = "✅ Complete!";
+            status.innerText = "✅ Patch Complete!";
         } catch (e) { status.innerText = "❌ Error: " + e.message; }
     }
 </script>
