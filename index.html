@@ -3,26 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cbus Assistant Pro v1.5</title>
+    <title>Cbus Assistant Pro v1.6</title>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; padding: 15px; background: #f0f4f7; color: #333; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 15px; background: #f0f4f7; color: #333; }
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .version-badge { float: right; background: #d32f2f; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .version-badge { float: right; background: #005596; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         h2 { color: #005596; text-align: center; margin-top: 10px; }
         .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
         .input-row div { flex: 1; }
         label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 3px; color: #666; }
         input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+        .form-box { background: #f9f9f9; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-top: 15px; }
+        .form-item { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; cursor: pointer; }
+        .form-item input { width: auto; margin-right: 10px; }
         button { width: 100%; padding: 16px; background: #005596; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 20px; cursor: pointer; }
-        #status { text-align: center; margin-top: 15px; font-weight: bold; color: #005596; }
+        #status { text-align: center; margin-top: 15px; font-weight: bold; color: #005596; font-size: 14px; }
+        #auth-screen { text-align: center; padding: 40px 0; }
     </style>
 </head>
 <body>
 
-<div id="main-content" class="container">
-    <span class="version-badge">v1.5 CRITICAL FIX</span>
+<div id="auth-screen" class="container">
+    <span class="version-badge">v1.6</span>
+    <h2>🔒 Secure Entry</h2>
+    <input type="password" id="pin-input" inputmode="numeric" placeholder="Enter PIN" maxlength="4" style="text-align:center; width: 60%;">
+    <button onclick="checkPin()">Unlock</button>
+</div>
+
+<div id="main-content" class="container" style="display:none;">
+    <span class="version-badge" style="background: #2e7d32;">v1.6 ACTIVE</span>
     <h2>🏗️ Cbus Assistant</h2>
 
     <div class="input-row">
@@ -32,57 +43,85 @@
 
     <div class="input-row">
         <div><label>Member Number</label><input type="text" id="member_no"></div>
-        <div><label>TFN</label><input type="text" id="tfn"></div>
+        <div><label>Date of Birth</label><input type="date" id="dob"></div>
     </div>
 
     <div class="input-row">
+        <div><label>TFN</label><input type="text" id="tfn" inputmode="numeric"></div>
         <div><label>Mobile</label><input type="tel" id="mobile"></div>
-        <div><label>Email</label><input type="email" id="email"></div>
     </div>
 
-    <div><label>Street Address</label><input type="text" id="address"></div>
+    <div><label>Email Address</label><input type="email" id="email"></div>
+
+    <div style="margin-top:10px;"><label>Street Address (Number & Street)</label><input type="text" id="address"></div>
     
     <div class="input-row" style="margin-top:10px;">
         <div style="flex:2;"><label>Suburb</label><input type="text" id="suburb"></div>
-        <div><label>State</label><input type="text" id="state" placeholder="VIC"></div>
+        <div><label>State</label><select id="state"><option>VIC</option><option>NSW</option><option>QLD</option><option>WA</option><option>SA</option><option>TAS</option><option>ACT</option><option>NT</option></select></div>
         <div><label>Postcode</label><input type="text" id="postcode"></div>
     </div>
 
-    <div id="form-list" style="margin-top:20px; border-top: 1px solid #eee; padding-top:10px;">
-        <label style="display:block; padding: 5px 0;"><input type="checkbox" value="i-want-my-super-paid-into-media-super.pdf"> Media Super Pay-In Form</label>
-        <label style="display:block; padding: 5px 0;"><input type="checkbox" value="combine-your-super.pdf"> Combine Your Super</label>
-        <label style="display:block; padding: 5px 0;"><input type="checkbox" value="C-join-industry-form.pdf"> Join Cbus Industry</label>
+    <div class="form-box">
+        <label>Select Forms to Bundle:</label>
+        <div id="form-list">
+            <label class="form-item"><input type="checkbox" value="C-join-industry-form.pdf"> Join Industry Form (C)</label>
+            <label class="form-item"><input type="checkbox" value="join-industry.pdf"> Join Industry (Standard)</label>
+            <label class="form-item"><input type="checkbox" value="C-super-withdrawal-form.pdf"> Super Withdrawal (C)</label>
+            <label class="form-item"><input type="checkbox" value="super-withdrawal-form.pdf"> Super Withdrawal (Standard)</label>
+            <label class="form-item"><input type="checkbox" value="combine-your-super.pdf"> Combine Your Super</label>
+            <label class="form-item"><input type="checkbox" value="C-Binding-Death-Benefit-Nomination-Form.pdf"> Binding Death Nom (C)</label>
+            <label class="form-item"><input type="checkbox" value="binding-death-nomination.pdf"> Binding Death Nom (Standard)</label>
+            <label class="form-item"><input type="checkbox" value="C-Change-Insurance-Form-Industry-Super.pdf"> Change Insurance (C)</label>
+            <label class="form-item"><input type="checkbox" value="C-Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> Transfer Insurance Cover (C)</label>
+            <label class="form-item"><input type="checkbox" value="application-transfer-existing-insurance-cover.pdf"> Transfer Insurance (Standard)</label>
+            <label class="form-item"><input type="checkbox" value="i-want-my-super-paid-into-media-super.pdf"> Media Super Pay-In</label>
+        </div>
     </div>
 
-    <button id="download-btn" onclick="generateZip()">🚀 Download Fixed Bundle</button>
+    <button id="download-btn" onclick="generateZip()">🚀 Download v1.6 Bundle</button>
     <div id="status"></div>
 </div>
 
 <script>
+    const PIN = "1234";
+    function checkPin() {
+        if(document.getElementById('pin-input').value === PIN) {
+            document.getElementById('auth-screen').style.display='none';
+            document.getElementById('main-content').style.display='block';
+        } else { alert("Wrong PIN"); }
+    }
+
     async function generateZip() {
         const selected = Array.from(document.querySelectorAll('#form-list input:checked'));
-        if (selected.length === 0) return alert("Please select a form!");
+        if (selected.length === 0) return alert("Select at least one form!");
 
         const status = document.getElementById('status');
+        const btn = document.getElementById('download-btn');
         const zip = new JSZip();
-        
+        btn.disabled = true;
+
         try {
             for (let item of selected) {
                 const fileName = item.value;
-                status.innerText = `🔄 Processing ${fileName}...`;
+                status.innerText = `✍️ Filling: ${fileName}`;
                 
                 const response = await fetch(`./forms/${fileName}`);
+                if (!response.ok) continue;
+                
                 const bytes = await response.arrayBuffer();
                 const pdfDoc = await PDFLib.PDFDocument.load(bytes);
                 const form = pdfDoc.getForm();
                 const fields = form.getFields();
 
-                // INPUT VALUES
+                const dobVal = document.getElementById('dob').value;
+                let dD="", dM="", dY=""; if(dobVal) [dY, dM, dD] = dobVal.split('-');
+                const tfn = document.getElementById('tfn').value.replace(/\s/g,'');
+
                 const val = {
                     gn: document.getElementById('given_names').value,
                     fn: document.getElementById('family_name').value,
                     mn: document.getElementById('member_no').value,
-                    tfn: document.getElementById('tfn').value,
+                    tfn: tfn,
                     mob: document.getElementById('mobile').value,
                     eml: document.getElementById('email').value,
                     addr: document.getElementById('address').value,
@@ -91,32 +130,44 @@
                     pc: document.getElementById('postcode').value
                 };
 
-                // FUZZY MATCHING LOGIC
-                // This will complete fields even if the internal names have small differences
+                // DIAGNOSTIC FUZZY MATCH LOOP
                 fields.forEach(field => {
-                    const name = field.getName().toLowerCase();
-                    const type = field.constructor.name;
+                    if (field.constructor.name === 'PDFTextField') {
+                        const name = field.getName().toLowerCase();
+                        
+                        // Street Address (Highest Priority Fix)
+                        if (name.includes('address') && !name.includes('postal') && !name.includes('email')) {
+                            field.setText(val.addr);
+                        }
+                        
+                        // Member Number (Cbus & Media Super)
+                        if (name.includes('member') && name.includes('number')) {
+                            field.setText(val.mn);
+                        }
 
-                    if (type === 'PDFTextField') {
-                        // Name Logic
+                        // Names
                         if (name.includes('given') && name.includes('name')) field.setText(val.gn);
                         if (name.includes('family') && name.includes('name')) field.setText(val.fn);
-                        
-                        // Member Number Logic
-                        if (name.includes('member') && name.includes('number')) field.setText(val.mn);
-                        
-                        // Address Logic (The missing part!)
-                        if (name === 'residential address' || name.includes('residential address (compulsory)')) field.setText(val.addr);
+
+                        // Location
                         if (name.includes('suburb')) field.setText(val.sub);
                         if (name.includes('state')) field.setText(val.st);
                         if (name.includes('postcode')) field.setText(val.pc);
-                        
-                        // Contact Logic
-                        if (name === 'mobile' || name === 'mobile phone' || name.includes('telephone mobile')) field.setText(val.mob);
-                        if (name.includes('email address')) field.setText(val.eml);
-                        
-                        // TFN Logic
-                        if (name.includes('tax file number') || name === 'tfn') field.setText(val.tfn);
+
+                        // Contact (Including "Mobile phone" variation)
+                        if (name.includes('mobile')) field.setText(val.mob);
+                        if (name.includes('email')) field.setText(val.eml);
+
+                        // TFN Splitting
+                        if (name === 'tfn1' || name.includes('tfn_1')) field.setText(val.tfn.substring(0,3));
+                        if (name === 'tfn2' || name.includes('tfn_2')) field.setText(val.tfn.substring(3,6));
+                        if (name === 'tfn3' || name.includes('tfn_3')) field.setText(val.tfn.substring(6,9));
+                        if (name === 'tax file number' || name === 'tfn') field.setText(val.tfn);
+
+                        // Date of Birth
+                        if (name.includes('birth') && name.includes('day')) field.setText(dD);
+                        if (name.includes('birth') && name.includes('month')) field.setText(dM);
+                        if (name.includes('birth') && name.includes('year')) field.setText(dY);
                     }
                 });
 
@@ -124,15 +175,17 @@
                 zip.file(`Filled_${fileName}`, savedBytes);
             }
 
+            status.innerText = "📦 Saving ZIP...";
             const content = await zip.generateAsync({type:"blob"});
             const link = document.createElement('a');
             link.href = URL.createObjectURL(content);
-            link.download = `Cbus_Assistant_v1.5.zip`;
+            link.download = `${document.getElementById('family_name').value || 'Cbus'}_Forms.zip`;
             link.click();
-            status.innerText = "✅ Successfully Completed!";
+            status.innerText = "✅ Done!";
         } catch (err) {
             status.innerText = "❌ Error: " + err.message;
-            console.error(err);
+        } finally {
+            btn.disabled = false;
         }
     }
 </script>
