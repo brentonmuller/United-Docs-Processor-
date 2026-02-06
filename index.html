@@ -16,11 +16,9 @@
         input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
         .form-box { background: #f9f9f9; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-top: 15px; }
         .form-item { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; cursor: pointer; }
-        .form-item:last-child { border-bottom: none; }
         .form-item input { width: auto; margin-right: 10px; }
         button { width: 100%; padding: 16px; background: #005596; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 20px; cursor: pointer; }
-        button:disabled { background: #ccc; }
-        #status { text-align: center; margin-top: 15px; font-weight: bold; color: #005596; min-height: 1.2em; font-size: 14px; }
+        #status { text-align: center; margin-top: 15px; font-weight: bold; color: #005596; font-size: 14px; }
         #auth-screen { text-align: center; padding: 40px 0; }
     </style>
 </head>
@@ -36,8 +34,8 @@
     <h2>🏗️ Cbus Assistant</h2>
 
     <div class="input-row">
-        <div><label>Given Name(s)</label><input type="text" id="given_names" placeholder="John"></div>
-        <div><label>Family Name</label><input type="text" id="family_name" placeholder="Doe"></div>
+        <div><label>Given Name(s)</label><input type="text" id="given_names"></div>
+        <div><label>Family Name</label><input type="text" id="family_name"></div>
     </div>
 
     <div class="input-row">
@@ -50,7 +48,9 @@
         <div><label>Mobile</label><input type="tel" id="mobile"></div>
     </div>
 
-    <div><label>Residential Address</label><input type="text" id="address" placeholder="Street Number & Name"></div>
+    <div><label>Email Address</label><input type="email" id="email" placeholder="email@example.com"></div>
+
+    <div style="margin-top:10px;"><label>Residential Address</label><input type="text" id="address" placeholder="Street Number & Name"></div>
     
     <div class="input-row" style="margin-top:10px;">
         <div style="flex:2;"><label>Suburb</label><input type="text" id="suburb"></div>
@@ -65,7 +65,7 @@
             <label class="form-item"><input type="checkbox" value="join-industry.pdf"> Join Industry (Media)</label>
             <label class="form-item"><input type="checkbox" value="C-super-withdrawal-form.pdf"> Super Withdrawal (C)</label>
             <label class="form-item"><input type="checkbox" value="super-withdrawal-form.pdf"> Super Withdrawal (Media)</label>
-            <label class="form-item"><input type="checkbox" value="combine-your-super.pdf"> Combine Your Super (Media)</label>
+            <label class="form-item"><input type="checkbox" value="combine-your-super.pdf"> Combine Your Super</label>
             <label class="form-item"><input type="checkbox" value="C-Binding-Death-Benefit-Nomination-Form.pdf"> Binding Death Nom (C)</label>
             <label class="form-item"><input type="checkbox" value="binding-death-nomination.pdf"> Binding Death Nom (Media)</label>
             <label class="form-item"><input type="checkbox" value="C-Change-Insurance-Form-Industry-Super.pdf"> Change Insurance (C)</label>
@@ -81,7 +81,6 @@
 
 <script>
     const PIN = "1234";
-
     function checkPin() {
         if(document.getElementById('pin-input').value === PIN) {
             document.getElementById('auth-screen').style.display='none';
@@ -96,77 +95,64 @@
         const status = document.getElementById('status');
         const btn = document.getElementById('download-btn');
         const zip = new JSZip();
-        
-        status.innerText = "⏳ Starting process...";
         btn.disabled = true;
 
         try {
-            let filesAdded = 0;
-
             for (let item of selected) {
                 const fileName = item.value;
-                status.innerText = `✍️ Filling: ${fileName}`;
+                status.innerText = `✍️ Processing: ${fileName}`;
                 
                 const response = await fetch(`./forms/${fileName}`);
-                if (!response.ok) {
-                    throw new Error(`File not found: ${fileName}. Ensure it is in the /forms/ folder.`);
-                }
+                if (!response.ok) continue;
                 
                 const bytes = await response.arrayBuffer();
                 const pdfDoc = await PDFLib.PDFDocument.load(bytes);
                 const form = pdfDoc.getForm();
 
                 const dobVal = document.getElementById('dob').value;
-                let dD="", dM="", dY=""; 
-                if(dobVal){ 
-                    const [year, month, day] = dobVal.split('-');
-                    dD = day; dM = month; dY = year;
-                }
+                let dD="", dM="", dY=""; if(dobVal) [dY, dM, dD] = dobVal.split('-');
 
                 const tfn = document.getElementById('tfn').value.replace(/\s/g,'');
-                const t1=tfn.substring(0,3), t2=tfn.substring(3,6), t3=tfn.substring(6,9);
-
-                const data = {
+                
+                // DATA MAPPING WITH ALIASES
+                const fieldMap = {
                     'Given names': document.getElementById('given_names').value,
                     'Family name': document.getElementById('family_name').value,
                     'Member number': document.getElementById('member_no').value,
+                    'Cbus Super member number if known': document.getElementById('member_no').value,
                     'Date of birth day': dD, 'Date of birth month': dM, 'Date of birth year': dY,
-                    'TFN1': t1, 'TFN2': t2, 'TFN3': t3,
+                    'TFN1': tfn.substring(0,3), 'TFN2': tfn.substring(3,6), 'TFN3': tfn.substring(6,9),
                     'Residential address (compulsory)': document.getElementById('address').value,
+                    'Residential address compulsory': document.getElementById('address').value,
                     'Suburb/town': document.getElementById('suburb').value,
                     'State': document.getElementById('state').value,
                     'Postcode': document.getElementById('postcode').value,
-                    'Telephone mobile': document.getElementById('mobile').value
+                    'Telephone mobile': document.getElementById('mobile').value,
+                    'Mobile': document.getElementById('mobile').value,
+                    'Email address (providing your email means you give us permission to use it)': document.getElementById('email').value,
+                    'Email address': document.getElementById('email').value
                 };
 
-                Object.keys(data).forEach(key => {
-                    try { 
+                Object.keys(fieldMap).forEach(key => {
+                    try {
                         const field = form.getTextField(key);
-                        if (field) field.setText(data[key]); 
+                        if (field) field.setText(fieldMap[key]);
                     } catch(e) {}
                 });
 
                 const savedBytes = await pdfDoc.save();
                 zip.file(`Filled_${fileName}`, savedBytes);
-                filesAdded++;
             }
 
-            if (filesAdded > 0) {
-                status.innerText = "📦 Creating ZIP file...";
-                const content = await zip.generateAsync({type:"blob"});
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(content);
-                const lName = document.getElementById('family_name').value || "Cbus";
-                link.download = `${lName}_Forms.zip`;
-                link.click();
-                status.innerText = "✅ Done! Check your Downloads.";
-            } else {
-                throw new Error("No files were added to the ZIP.");
-            }
+            status.innerText = "📦 Zipping...";
+            const content = await zip.generateAsync({type:"blob"});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = `${document.getElementById('family_name').value || 'Cbus'}_Forms.zip`;
+            link.click();
+            status.innerText = "✅ Done!";
         } catch (err) {
-            console.error(err);
             status.innerText = "❌ Error: " + err.message;
-            alert("Error: " + err.message);
         } finally {
             btn.disabled = false;
         }
