@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cbus Assistant Pro v1.2</title>
+    <title>Cbus Assistant Pro v1.3</title>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 15px; background: #f0f4f7; color: #333; }
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .version-badge { float: right; background: #2e7d32; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .version-badge { float: right; background: #005596; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         h2 { color: #005596; text-align: center; margin-top: 10px; }
         .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
         .input-row div { flex: 1; }
@@ -26,14 +26,14 @@
 <body>
 
 <div id="auth-screen" class="container">
-    <span class="version-badge">v1.2</span>
+    <span class="version-badge">v1.3</span>
     <h2>🔒 Secure Entry</h2>
     <input type="password" id="pin-input" inputmode="numeric" placeholder="Enter PIN" maxlength="4" style="text-align:center; width: 60%;">
     <button onclick="checkPin()">Unlock</button>
 </div>
 
 <div id="main-content" class="container" style="display:none;">
-    <span class="version-badge">v1.2 READY</span>
+    <span class="version-badge" style="background: #2e7d32;">v1.3 ACTIVE</span>
     <h2>🏗️ Cbus Assistant</h2>
 
     <div class="input-row">
@@ -78,7 +78,7 @@
         </div>
     </div>
 
-    <button id="download-btn" onclick="generateZip()">🚀 Download v1.2 Bundle</button>
+    <button id="download-btn" onclick="generateZip()">🚀 Download v1.3 Bundle</button>
     <div id="status"></div>
 </div>
 
@@ -103,7 +103,7 @@
         try {
             for (let item of selected) {
                 const fileName = item.value;
-                status.innerText = `✍️ Filling: ${fileName}`;
+                status.innerText = `✍️ Deep Filling: ${fileName}`;
                 
                 const response = await fetch(`./forms/${fileName}`);
                 if (!response.ok) continue;
@@ -120,41 +120,49 @@
                 const mob = document.getElementById('mobile').value;
                 const eml = document.getElementById('email').value;
 
-                // FULL MAPPING OF ALL DETECTED VARIATIONS
-                const map = {
+                // DEEP DIAGNOSTIC MAPPING
+                // This covers every variation found across all 11 forms
+                const diagnosticMap = {
+                    // NAMES
                     'Given name(s)': document.getElementById('given_names').value,
                     'Given names': document.getElementById('given_names').value,
                     'Family name': document.getElementById('family_name').value,
-                    
-                    'Member number': mNo,
-                    'Media Super member number': mNo,
-                    'Media Super member number, if known': mNo,
+
+                    // MEMBER NUMBERS
                     'Cbus Super member number, if known': mNo,
                     'Cbus Super member number if known': mNo,
+                    'Media Super member number, if known': mNo,
+                    'Media Super member number': mNo,
+                    'Member number': mNo,
 
+                    // RESIDENTIAL ADDRESS (STREET)
                     'Residential address (compulsory)': addr,
                     'Residential address compulsory': addr,
                     'Residential address': addr,
-                    
+                    'Street address': addr,
+
+                    // LOCATION
                     'Suburb/town': document.getElementById('suburb').value,
                     'State': document.getElementById('state').value,
                     'Postcode': document.getElementById('postcode').value,
 
+                    // CONTACT
                     'Mobile': mob,
                     'Telephone mobile': mob,
                     'Mobile phone': mob,
-                    
                     'Email address': eml,
                     'Email address (providing your email means you give us permission to use it)': eml,
 
+                    // DATE OF BIRTH & TFN
                     'Date of birth day': dD, 'Date of birth month': dM, 'Date of birth year': dY,
                     'TFN1': tfn.substring(0,3), 'TFN2': tfn.substring(3,6), 'TFN3': tfn.substring(6,9)
                 };
 
-                Object.keys(map).forEach(key => {
+                // Execution Loop
+                Object.keys(diagnosticMap).forEach(key => {
                     try {
                         const field = form.getTextField(key);
-                        if (field) field.setText(map[key]);
+                        if (field) field.setText(diagnosticMap[key]);
                     } catch(e) {}
                 });
 
@@ -162,13 +170,13 @@
                 zip.file(`Filled_${fileName}`, savedBytes);
             }
 
-            status.innerText = "📦 Saving ZIP...";
+            status.innerText = "📦 Saving Bundle...";
             const content = await zip.generateAsync({type:"blob"});
             const link = document.createElement('a');
             link.href = URL.createObjectURL(content);
-            link.download = `${document.getElementById('family_name').value || 'Cbus'}_v1.2_Bundle.zip`;
+            link.download = `${document.getElementById('family_name').value || 'Cbus'}_v1.3.zip`;
             link.click();
-            status.innerText = "✅ Done!";
+            status.innerText = "✅ Diagnostic Complete!";
         } catch (err) {
             status.innerText = "❌ Error: " + err.message;
         } finally {
