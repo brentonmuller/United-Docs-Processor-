@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cbus Assistant Pro v1.0</title>
+    <title>Cbus Assistant Pro v1.1</title>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 15px; background: #f0f4f7; color: #333; }
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .version-badge { float: right; background: #005596; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .version-badge { float: right; background: #d32f2f; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         h2 { color: #005596; text-align: center; margin-top: 10px; }
         .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
         .input-row div { flex: 1; }
@@ -26,14 +26,14 @@
 <body>
 
 <div id="auth-screen" class="container">
-    <span class="version-badge">v1.0</span>
+    <span class="version-badge">v1.1</span>
     <h2>🔒 Secure Entry</h2>
     <input type="password" id="pin-input" inputmode="numeric" placeholder="Enter PIN" maxlength="4" style="text-align:center; width: 60%;">
     <button onclick="checkPin()">Unlock</button>
 </div>
 
 <div id="main-content" class="container" style="display:none;">
-    <span class="version-badge">v1.0</span>
+    <span class="version-badge" style="background: #2e7d32;">v1.1 ACTIVE</span>
     <h2>🏗️ Cbus Assistant</h2>
 
     <div class="input-row">
@@ -53,7 +53,7 @@
 
     <div><label>Email Address</label><input type="email" id="email" placeholder="email@example.com"></div>
 
-    <div style="margin-top:10px;"><label>Residential Address (Number & Street)</label><input type="text" id="address"></div>
+    <div style="margin-top:10px;"><label>Street Address (Number & Street)</label><input type="text" id="address"></div>
     
     <div class="input-row" style="margin-top:10px;">
         <div style="flex:2;"><label>Suburb</label><input type="text" id="suburb"></div>
@@ -78,7 +78,7 @@
         </div>
     </div>
 
-    <button id="download-btn" onclick="generateZip()">🚀 Download v1.0 Bundle</button>
+    <button id="download-btn" onclick="generateZip()">🚀 Download v1.1 Bundle</button>
     <div id="status"></div>
 </div>
 
@@ -111,61 +111,53 @@
                 const bytes = await response.arrayBuffer();
                 const pdfDoc = await PDFLib.PDFDocument.load(bytes);
                 const form = pdfDoc.getForm();
-                const fields = form.getFields();
 
-                // Prep Data
                 const dobVal = document.getElementById('dob').value;
                 let dD="", dM="", dY=""; if(dobVal) [dY, dM, dD] = dobVal.split('-');
                 const tfn = document.getElementById('tfn').value.replace(/\s/g,'');
 
-                // Mapping Logic
-                const data = {
-                    firstName: document.getElementById('given_names').value,
-                    lastName: document.getElementById('family_name').value,
-                    memberNo: document.getElementById('member_no').value,
-                    street: document.getElementById('address').value,
-                    suburb: document.getElementById('suburb').value,
-                    state: document.getElementById('state').value,
-                    postcode: document.getElementById('postcode').value,
-                    mobile: document.getElementById('mobile').value,
-                    email: document.getElementById('email').value,
-                    tfn: tfn,
-                    dobD: dD, dobM: dM, dobY: dY
+                // EXACT MAPPING ARRAY
+                // This covers the hidden logic found in the Cbus and Media Super PDFs
+                const dataMap = {
+                    // Given Names
+                    'Given name(s)': document.getElementById('given_names').value,
+                    'Given names': document.getElementById('given_names').value,
+                    
+                    // Family Name
+                    'Family name': document.getElementById('family_name').value,
+                    
+                    // Member Number
+                    'Cbus Super member number, if known': document.getElementById('member_no').value,
+                    'Cbus Super member number if known': document.getElementById('member_no').value,
+                    'Media Super member number, if known': document.getElementById('member_no').value,
+                    'Media Super member number': document.getElementById('member_no').value,
+                    'Member number': document.getElementById('member_no').value,
+
+                    // Address
+                    'Residential address (compulsory)': document.getElementById('address').value,
+                    'Residential address compulsory': document.getElementById('address').value,
+                    'Residential address': document.getElementById('address').value,
+                    'Suburb/town': document.getElementById('suburb').value,
+                    'State': document.getElementById('state').value,
+                    'Postcode': document.getElementById('postcode').value,
+
+                    // Contact
+                    'Mobile': document.getElementById('mobile').value,
+                    'Telephone mobile': document.getElementById('mobile').value,
+                    'Email address': document.getElementById('email').value,
+                    'Email address (providing your email means you give us permission to use it)': document.getElementById('email').value,
+
+                    // DOB & TFN
+                    'Date of birth day': dD, 'Date of birth month': dM, 'Date of birth year': dY,
+                    'TFN1': tfn.substring(0,3), 'TFN2': tfn.substring(3,6), 'TFN3': tfn.substring(6,9)
                 };
 
-                // Advanced Matching Loop
-                fields.forEach(field => {
-                    const type = field.constructor.name;
-                    if (type === 'PDFTextField') {
-                        const name = field.getName().toLowerCase();
-                        
-                        // Member Number Check
-                        if (name.includes('member number')) field.setText(data.memberNo);
-                        
-                        // Name Checks
-                        if (name.includes('given name')) field.setText(data.firstName);
-                        if (name.includes('family name')) field.setText(data.lastName);
-                        
-                        // Address Checks
-                        if (name.includes('address') && !name.includes('postal') && !name.includes('email')) field.setText(data.street);
-                        if (name.includes('suburb')) field.setText(data.suburb);
-                        if (name.includes('state')) field.setText(data.state);
-                        if (name.includes('postcode')) field.setText(data.postcode);
-                        
-                        // Contact Checks
-                        if (name.includes('mobile')) field.setText(data.mobile);
-                        if (name.includes('email address')) field.setText(data.email);
-                        
-                        // Date Checks
-                        if (name.includes('birth day')) field.setText(data.dobD);
-                        if (name.includes('birth month')) field.setText(data.dobM);
-                        if (name.includes('birth year')) field.setText(data.dobY);
-                        
-                        // TFN Checks
-                        if (name.includes('tfn1')) field.setText(data.tfn.substring(0,3));
-                        if (name.includes('tfn2')) field.setText(data.tfn.substring(3,6));
-                        if (name.includes('tfn3')) field.setText(data.tfn.substring(6,9));
-                    }
+                // Apply mappings
+                Object.keys(dataMap).forEach(key => {
+                    try {
+                        const field = form.getTextField(key);
+                        if (field) field.setText(dataMap[key]);
+                    } catch(e) {}
                 });
 
                 const savedBytes = await pdfDoc.save();
@@ -176,7 +168,7 @@
             const content = await zip.generateAsync({type:"blob"});
             const link = document.createElement('a');
             link.href = URL.createObjectURL(content);
-            link.download = `${document.getElementById('family_name').value || 'Cbus'}_v1_Bundle.zip`;
+            link.download = `${document.getElementById('family_name').value || 'Cbus'}_v1.1_Forms.zip`;
             link.click();
             status.innerText = "✅ Done!";
         } catch (err) {
