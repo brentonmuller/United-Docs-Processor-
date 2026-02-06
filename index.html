@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cbus Assistant v3.1</title>
+    <title>Cbus Assistant v3.2</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -24,7 +24,7 @@
 <body>
 
 <div class="card">
-    <h2 style="color:var(--cbus); text-align:center; margin-top:0;">🏗️ Cbus Assistant v3.1</h2>
+    <h2 style="color:var(--cbus); text-align:center; margin-top:0;">🏗️ Cbus Assistant v3.2</h2>
     
     <div class="grid">
         <div class="full"><label>Member Number</label><input type="text" id="m_no"></div>
@@ -40,7 +40,7 @@
     </div>
 
     <div class="form-selector">
-        <label>Select Forms (Full 12-Form Set):</label>
+        <label>Select Required Forms:</label>
         <div id="formList">
             <label class="form-item"><input type="checkbox" value="Change-Details-Form.pdf"> Change Details</label>
             <label class="form-item"><input type="checkbox" value="Change-Income-Stream-Details-Form.pdf"> Income Stream Details</label>
@@ -53,11 +53,10 @@
             <label class="form-item"><input type="checkbox" value="Change-Insurance-Form-Industry-Super.pdf"> Change Insurance (Industry)</label>
             <label class="form-item"><input type="checkbox" value="Rollover-Form.pdf"> Rollover Form</label>
             <label class="form-item"><input type="checkbox" value="join-industry-form.pdf"> Join Industry Form</label>
-            <label class="form-item"><input type="checkbox" value="I-want-my-super-paid-into-Cbus.pdf"> Pay into Cbus (Employer Form)</label>
         </div>
     </div>
 
-    <button class="btn-run" onclick="runBatch()">🚀 Generate All Selected</button>
+    <button class="btn-run" onclick="runBatch()">🚀 Generate Final Bundle</button>
     <div id="status"></div>
 </div>
 
@@ -69,7 +68,6 @@
         const status = document.getElementById('status');
         const zip = new JSZip();
 
-        // 1. Prepare Data & Dates
         const dobVal = document.getElementById('dob').value;
         const [y, m, d] = dobVal ? dobVal.split('-') : ['', '', ''];
         const tfn = document.getElementById('tfn').value.replace(/\s/g, '');
@@ -96,32 +94,32 @@
                 status.innerText = `Processing: ${fileName}...`;
                 
                 const response = await fetch(`./forms/CBUS/${fileName}?t=${Date.now()}`);
-                if (!response.ok) throw new Error(`File ${fileName} not found in forms/CBUS/`);
+                if (!response.ok) throw new Error(`File ${fileName} not found.`);
 
                 const pdfDoc = await PDFLib.PDFDocument.load(await response.arrayBuffer());
                 const form = pdfDoc.getForm();
 
-                // 2. THE FORENSIC MEGA-MAP (Covers every unique ID across all 12 forms)
+                // MASTER MEGA-MAP: Covers all variations in the 11 uploaded PDFs
                 const masterMap = {
-                    // IDs & Names
-                    'Cbus member number': data.m, 'Member number': data.m, 'Cbus Super member number': data.m, 
+                    // Identification
+                    'Cbus member number': data.m, 'Member number': data.m, 'Cbus Super member number': data.m,
                     '8039653-member_number': data.m, '8138573-member_number': data.m,
                     'Given names': data.gn, 'Given name(s)': data.gn, 'First names': data.gn,
                     'Family name': data.fn,
                     'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
                     
-                    // Address Forensic (Covers Withdrawal, Occupation, Join, and Details forms)
+                    // Address Forensic (Fixed for all 11 forms)
                     'Residential address': data.addr, 'Residential address (compulsory)': data.addr, 'Street Number Name RES': data.addr,
                     'Street Number and Name': data.addr, 'Street Name': data.addr, 'Street Number': data.addr,
                     'Suburb/town': data.sub, 'Suburb/town RES': data.sub, 'step 2 - resid suburb/town': data.sub,
                     'Postcode': data.pc, 'Postcode RES': data.pc, 'step 2 - resid postcode': data.pc,
-                    'State': 'QLD', 'State RES': 'QLD', // Defaulting to QLD based on profile
+                    'State': 'QLD', 'State RES': 'QLD',
                     
-                    // Contact Forensic (Covers missing Mobile/Email IDs)
+                    // Contact Forensic (Mobile & Email)
                     'Mobile': data.mob, 'mobile': data.mob, 'mobile1': data.mob, 'Telephone mobile': data.mob, 'step 2 - Telephone mobile': data.mob,
                     'Email address': data.eml, 'Email Address': data.eml, 'email address': data.eml, 'Step 2 - email address': data.eml,
                     
-                    // TFN & Signs
+                    // Tax & Dates
                     'Tax file number (TFN)': tfn, 'TFN1': tfn.substring(0,3), 'TFN2': tfn.substring(3,6), 'TFN3': tfn.substring(6,9),
                     'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY,
                     'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
@@ -135,13 +133,13 @@
                 zip.file(`Filled_${fileName}`, await pdfDoc.save());
             }
 
-            status.innerText = "📦 Zipping...";
+            status.innerText = "📦 Creating Pack...";
             const blob = await zip.generateAsync({type:"blob"});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = `Cbus_Complete_Pack.zip`;
+            a.href = url; a.download = `Cbus_Assistant_Pack.zip`;
             a.click();
-            status.innerText = "✅ Successfully generated pack.";
+            status.innerText = "✅ Done! Pack Downloaded.";
         } catch (err) {
             status.style.color = "red";
             status.innerText = `❌ ${err.message}`;
