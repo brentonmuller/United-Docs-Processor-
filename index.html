@@ -2,174 +2,158 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cbus & Media Super Assistant v2.2</title>
+    <title>Cbus & Media Super Assistant v2.3</title>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f4f7; padding: 15px; }
-        .card { background: white; max-width: 750px; margin: 0 auto; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-top: 8px solid #009354; }
-        .v-tag { float: right; background: #009354; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
-        h2 { color: #009354; text-align: center; margin-top: 0; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-        label { display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        .form-container { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd; }
-        .form-row { display: flex; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 13px; cursor: pointer; }
-        .form-row input { width: auto; margin-right: 10px; }
-        button { width: 100%; padding: 16px; background: #009354; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        #status { text-align: center; margin-top: 10px; font-weight: bold; color: #009354; }
-        #auth-box { text-align: center; padding: 50px 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f7; padding: 20px; }
+        .card { background: white; max-width: 750px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-top: 8px solid #009354; }
+        h2 { color: #009354; text-align: center; margin-bottom: 25px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px; }
+        label { display: block; font-size: 11px; font-weight: bold; color: #555; text-transform: uppercase; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .form-section { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #ddd; }
+        .form-item { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+        .form-item input { width: auto; margin-right: 12px; }
+        button { width: 100%; padding: 18px; background: #009354; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        #status { text-align: center; margin-top: 15px; font-weight: bold; color: #009354; }
+        .section-title { grid-column: span 3; color: #009354; font-size: 13px; border-bottom: 1px solid #eee; margin-top: 10px; padding-bottom: 5px; }
     </style>
 </head>
 <body>
 
-<div id="auth-box" class="card">
-    <h2>🔒 Secure Access</h2>
-    <input type="password" id="pin" placeholder="Enter PIN" style="width: 150px; text-align: center; font-size: 20px;">
-    <button onclick="checkPin()" style="width: 150px;">Unlock</button>
+<div id="auth" class="card" style="text-align:center;">
+    <h2>🔒 Secure Entry</h2>
+    <input type="password" id="pin" placeholder="Enter PIN" style="width:150px; text-align:center; font-size:20px; margin-bottom:10px;">
+    <button onclick="unlock()" style="width:150px;">Unlock</button>
 </div>
 
 <div id="app" class="card" style="display:none;">
-    <span class="v-tag">v2.2 ACTIVE</span>
     <h2>🏗️ Cbus Assistant Pro</h2>
     
     <div class="grid">
-        <div><label>Given Name(s)</label><input type="text" id="gn"></div>
-        <div><label>Family Name</label><input type="text" id="fn"></div>
-    </div>
-
-    <div class="grid">
-        <div><label>Member Number</label><input type="text" id="mn"></div>
+        <div class="section-title">Personal Details</div>
+        <div><label>Member No.</label><input type="text" id="m_no"></div>
+        <div><label>Given Name(s)</label><input type="text" id="g_name"></div>
+        <div><label>Family Name</label><input type="text" id="f_name"></div>
         <div><label>Date of Birth</label><input type="date" id="dob"></div>
-    </div>
+        <div style="grid-column: span 2;"><label>Tax File Number</label><input type="text" id="tfn"></div>
 
-    <div class="grid">
-        <div><label>TFN</label><input type="text" id="tfn"></div>
+        <div class="section-title">Contact & Address</div>
         <div><label>Mobile</label><input type="text" id="mob"></div>
-    </div>
-
-    <div style="margin-bottom:12px;"><label>Email Address</label><input type="text" id="eml"></div>
-    <div style="margin-bottom:12px;"><label>Street Address</label><input type="text" id="addr"></div>
-
-    <div class="grid">
-        <div style="grid-column: span 2;"><label>Suburb</label><input type="text" id="sub"></div>
+        <div style="grid-column: span 2;"><label>Email Address</label><input type="email" id="eml"></div>
+        <div style="grid-column: span 3;"><label>Street Address</label><input type="text" id="addr"></div>
+        <div><label>Suburb</label><input type="text" id="sub"></div>
         <div><label>State</label><input type="text" id="st" value="VIC"></div>
         <div><label>Postcode</label><input type="text" id="pc"></div>
     </div>
 
-    <div class="form-container">
-        <label>Select All Forms to Process:</label>
-        <div id="form-selection">
-            <label class="form-row"><input type="checkbox" value="i-want-my-super-paid-into-media-super.pdf"> 1. Media Super Pay-In (Forensic Fix)</label>
-            <label class="form-row"><input type="checkbox" value="combine-your-super.pdf"> 2. Combine Your Super</label>
-            <label class="form-row"><input type="checkbox" value="C-join-industry-form.pdf"> 3. Cbus Join Industry</label>
-            <label class="form-row"><input type="checkbox" value="join-industry.pdf"> 4. Media Join Industry</label>
-            <label class="form-row"><input type="checkbox" value="C-super-withdrawal-form.pdf"> 5. Cbus Withdrawal</label>
-            <label class="form-row"><input type="checkbox" value="super-withdrawal-form.pdf"> 6. Media Withdrawal</label>
-            <label class="form-row"><input type="checkbox" value="C-Binding-Death-Benefit-Nomination-Form.pdf"> 7. Cbus Death Nom</label>
-            <label class="form-row"><input type="checkbox" value="binding-death-nomination.pdf"> 8. Media Death Nom</label>
-            <label class="form-row"><input type="checkbox" value="C-Change-Insurance-Form-Industry-Super.pdf"> 9. Cbus Change Insurance</label>
+    <div class="form-section">
+        <label>Select All 11 Forms to Fill:</label>
+        <div id="form-list">
+            <label class="form-item"><input type="checkbox" value="i-want-my-super-paid-into-media-super.pdf"> 1. Media Super Pay-In (Critical Fix)</label>
+            <label class="form-item"><input type="checkbox" value="combine-your-super.pdf"> 2. Combine Your Super</label>
+            <label class="form-item"><input type="checkbox" value="C-join-industry-form.pdf"> 3. Cbus Join Industry</label>
+            <label class="form-item"><input type="checkbox" value="join-industry.pdf"> 4. Media Join Industry</label>
+            <label class="form-item"><input type="checkbox" value="C-super-withdrawal-form.pdf"> 5. Cbus Withdrawal</label>
+            <label class="form-item"><input type="checkbox" value="super-withdrawal-form.pdf"> 6. Media Withdrawal</label>
+            <label class="form-item"><input type="checkbox" value="C-Binding-Death-Benefit-Nomination-Form.pdf"> 7. Cbus Death Nom</label>
+            <label class="form-item"><input type="checkbox" value="binding-death-nomination.pdf"> 8. Media Death Nom</label>
+            <label class="form-item"><input type="checkbox" value="C-Change-Insurance-Form-Industry-Super.pdf"> 9. Cbus Change Insurance</label>
             <label class="form-item"><input type="checkbox" value="C-Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> 10. Cbus Transfer Insurance</label>
             <label class="form-item"><input type="checkbox" value="application-transfer-existing-insurance-cover.pdf"> 11. Media Transfer Insurance</label>
         </div>
     </div>
 
-    <button onclick="processBundle()">🚀 Download Full Bundle</button>
+    <button onclick="processBundle()">🚀 Fill & Download v2.3 Bundle</button>
     <div id="status"></div>
 </div>
 
 <script>
-    function checkPin() {
-        if(document.getElementById('pin').value === "1234") {
-            document.getElementById('auth-box').style.display='none';
-            document.getElementById('app').style.display='block';
-        } else { alert("Wrong PIN"); }
-    }
+    function unlock() { if(document.getElementById('pin').value === "1234") { document.getElementById('auth').style.display='none'; document.getElementById('app').style.display='block'; } }
 
     async function processBundle() {
-        const selected = Array.from(document.querySelectorAll('#form-selection input:checked'));
-        if (selected.length === 0) return alert("Please select forms!");
-
+        const selected = Array.from(document.querySelectorAll('#form-list input:checked'));
+        if (selected.length === 0) return alert("Select at least one form.");
         const status = document.getElementById('status');
         const zip = new JSZip();
-        
+
         try {
             for (let item of selected) {
                 const fileName = item.value;
-                status.innerText = `✍️ Applying Forensic Logic: ${fileName}`;
-                
+                status.innerText = `Forensic Processing: ${fileName}`;
                 const resp = await fetch(`./forms/${fileName}`);
                 const bytes = await resp.arrayBuffer();
                 const pdfDoc = await PDFLib.PDFDocument.load(bytes);
                 const form = pdfDoc.getForm();
-
-                const dVal = document.getElementById('dob').value;
-                let [y, m, d] = dVal ? dVal.split('-') : ["","",""];
-                const tfnVal = document.getElementById('tfn').value.replace(/\s/g,'');
-
+                
+                const dob = document.getElementById('dob').value;
+                const [y, m, d] = dob ? dob.split('-') : ['', '', ''];
+                const t = document.getElementById('tfn').value.replace(/\s/g, '');
+                
                 const data = {
-                    gn: document.getElementById('gn').value,
-                    fn: document.getElementById('fn').value,
-                    mn: document.getElementById('mn').value,
-                    tfn: tfnVal,
+                    mem: document.getElementById('m_no').value,
+                    gn: document.getElementById('g_name').value,
+                    fn: document.getElementById('f_name').value,
                     mob: document.getElementById('mob').value,
                     eml: document.getElementById('eml').value,
-                    addr: document.getElementById('addr').value,
+                    adr: document.getElementById('addr').value,
                     sub: document.getElementById('sub').value,
                     st: document.getElementById('st').value,
                     pc: document.getElementById('pc').value
                 };
 
-                // PC-RESTORED MAPPING (Extracted from your working file)
-                const map = {
-                    // Step-based IDs (Critical for Media Super Pay-In)
+                // THE RESTORED MAPPING - Based exactly on your working file
+                const masterMap = {
+                    // Residential Address - EXACT working keys
+                    'Residential address (compulsory)': data.adr,
+                    'Residential address': data.adr,
+                    'Street Number and Name': data.adr,
+                    'Street Name': data.adr,
+                    
+                    // Media Super Pay-In Keys
                     'Step 1 Given names': data.gn,
                     'Step 1 Family name': data.fn,
-                    'Step 1 Media Super member number': data.mn,
-                    'Step 1 Tax file number TFN': data.tfn,
-                    'Media Super member number': data.mn,
-                    'Media Super member number, if known': data.mn,
+                    'Step 1 Media Super member number': data.mem,
+                    'Media Super member number': data.mem,
+                    'Media Super member number, if known': data.mem,
+                    'Step 1 Tax file number TFN': t,
 
-                    // Residential Address Variations
-                    'Residential address (compulsory)': data.addr,
-                    'Residential address': data.addr,
-                    'Street address': data.addr,
-
-                    // Common Cbus/Media IDs
-                    'Given name(s)': data.gn,
-                    'Given names': data.gn,
+                    // Common Keys
+                    'Given names': data.gn, 'Given name(s)': data.gn,
                     'Family name': data.fn,
-                    'Suburb/town': data.sub,
-                    'State': data.st,
-                    'Postcode': data.pc,
-                    'Mobile': data.mob,
-                    'Mobile phone': data.mob,
-                    'Telephone mobile': data.mob,
-                    'Email address': data.eml,
-
-                    // Date & TFN components
-                    'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
-                    'TFN1': data.tfn.substring(0,3), 'TFN2': data.tfn.substring(3,6), 'TFN3': data.tfn.substring(6,9)
+                    'Member number': data.mem,
+                    'Suburb/town': data.sub, 'State': data.st, 'Postcode': data.pc,
+                    'Mobile': data.mob, 'Telephone mobile': data.mob, 'Email address': data.eml,
+                    
+                    // Withdrawal Form Prefixes
+                    '8138573-Given_Names': data.gn, '8138573-Family_Name': data.fn,
+                    '8138573-member_number': data.mem,
+                    '8138573-TFN1': t.substring(0,3), '8138573-TFN2': t.substring(3,6), '8138573-TFN3': t.substring(6,9)
                 };
 
-                Object.keys(map).forEach(key => {
-                    try { form.getTextField(key).setText(map[key]); } catch(e) {}
+                // Apply mapped fields
+                Object.keys(masterMap).forEach(key => {
+                    try { form.getTextField(key).setText(masterMap[key]); } catch(e) {}
                 });
+
+                // DATE SPLITTING Safety
+                try { 
+                    form.getTextField('Date of birth day').setText(d);
+                    form.getTextField('Date of birth month').setText(m);
+                    form.getTextField('Date of birth year').setText(y);
+                } catch(e) {}
 
                 const saved = await pdfDoc.save();
                 zip.file(`Filled_${fileName}`, saved);
             }
-
-            status.innerText = "📦 Saving ZIP Bundle...";
-            const content = await zip.generateAsync({type:"blob"});
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = `Cbus_Media_v2.2.zip`;
-            link.click();
-            status.innerText = "✅ Done!";
-        } catch (err) {
-            status.innerText = "❌ Error: " + err.message;
-        }
+            const blob = await zip.generateAsync({type:"blob"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = "Cbus_Media_Master_Fix.zip";
+            a.click();
+            status.innerText = "✅ Complete!";
+        } catch (e) { status.innerText = "❌ Error: " + e.message; }
     }
 </script>
 </body>
