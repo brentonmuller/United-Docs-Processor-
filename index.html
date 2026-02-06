@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cbus Assistant Pro v1.1</title>
+    <title>Cbus Assistant Pro v1.2</title>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 15px; background: #f0f4f7; color: #333; }
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .version-badge { float: right; background: #d32f2f; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .version-badge { float: right; background: #2e7d32; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         h2 { color: #005596; text-align: center; margin-top: 10px; }
         .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
         .input-row div { flex: 1; }
@@ -26,14 +26,14 @@
 <body>
 
 <div id="auth-screen" class="container">
-    <span class="version-badge">v1.1</span>
+    <span class="version-badge">v1.2</span>
     <h2>🔒 Secure Entry</h2>
     <input type="password" id="pin-input" inputmode="numeric" placeholder="Enter PIN" maxlength="4" style="text-align:center; width: 60%;">
     <button onclick="checkPin()">Unlock</button>
 </div>
 
 <div id="main-content" class="container" style="display:none;">
-    <span class="version-badge" style="background: #2e7d32;">v1.1 ACTIVE</span>
+    <span class="version-badge">v1.2 READY</span>
     <h2>🏗️ Cbus Assistant</h2>
 
     <div class="input-row">
@@ -47,11 +47,11 @@
     </div>
 
     <div class="input-row">
-        <div><label>TFN</label><input type="text" id="tfn" inputmode="numeric" placeholder="123 456 789"></div>
+        <div><label>TFN</label><input type="text" id="tfn" inputmode="numeric"></div>
         <div><label>Mobile</label><input type="tel" id="mobile"></div>
     </div>
 
-    <div><label>Email Address</label><input type="email" id="email" placeholder="email@example.com"></div>
+    <div><label>Email Address</label><input type="email" id="email"></div>
 
     <div style="margin-top:10px;"><label>Street Address (Number & Street)</label><input type="text" id="address"></div>
     
@@ -78,7 +78,7 @@
         </div>
     </div>
 
-    <button id="download-btn" onclick="generateZip()">🚀 Download v1.1 Bundle</button>
+    <button id="download-btn" onclick="generateZip()">🚀 Download v1.2 Bundle</button>
     <div id="status"></div>
 </div>
 
@@ -115,48 +115,46 @@
                 const dobVal = document.getElementById('dob').value;
                 let dD="", dM="", dY=""; if(dobVal) [dY, dM, dD] = dobVal.split('-');
                 const tfn = document.getElementById('tfn').value.replace(/\s/g,'');
+                const mNo = document.getElementById('member_no').value;
+                const addr = document.getElementById('address').value;
+                const mob = document.getElementById('mobile').value;
+                const eml = document.getElementById('email').value;
 
-                // EXACT MAPPING ARRAY
-                // This covers the hidden logic found in the Cbus and Media Super PDFs
-                const dataMap = {
-                    // Given Names
+                // FULL MAPPING OF ALL DETECTED VARIATIONS
+                const map = {
                     'Given name(s)': document.getElementById('given_names').value,
                     'Given names': document.getElementById('given_names').value,
-                    
-                    // Family Name
                     'Family name': document.getElementById('family_name').value,
                     
-                    // Member Number
-                    'Cbus Super member number, if known': document.getElementById('member_no').value,
-                    'Cbus Super member number if known': document.getElementById('member_no').value,
-                    'Media Super member number, if known': document.getElementById('member_no').value,
-                    'Media Super member number': document.getElementById('member_no').value,
-                    'Member number': document.getElementById('member_no').value,
+                    'Member number': mNo,
+                    'Media Super member number': mNo,
+                    'Media Super member number, if known': mNo,
+                    'Cbus Super member number, if known': mNo,
+                    'Cbus Super member number if known': mNo,
 
-                    // Address
-                    'Residential address (compulsory)': document.getElementById('address').value,
-                    'Residential address compulsory': document.getElementById('address').value,
-                    'Residential address': document.getElementById('address').value,
+                    'Residential address (compulsory)': addr,
+                    'Residential address compulsory': addr,
+                    'Residential address': addr,
+                    
                     'Suburb/town': document.getElementById('suburb').value,
                     'State': document.getElementById('state').value,
                     'Postcode': document.getElementById('postcode').value,
 
-                    // Contact
-                    'Mobile': document.getElementById('mobile').value,
-                    'Telephone mobile': document.getElementById('mobile').value,
-                    'Email address': document.getElementById('email').value,
-                    'Email address (providing your email means you give us permission to use it)': document.getElementById('email').value,
+                    'Mobile': mob,
+                    'Telephone mobile': mob,
+                    'Mobile phone': mob,
+                    
+                    'Email address': eml,
+                    'Email address (providing your email means you give us permission to use it)': eml,
 
-                    // DOB & TFN
                     'Date of birth day': dD, 'Date of birth month': dM, 'Date of birth year': dY,
                     'TFN1': tfn.substring(0,3), 'TFN2': tfn.substring(3,6), 'TFN3': tfn.substring(6,9)
                 };
 
-                // Apply mappings
-                Object.keys(dataMap).forEach(key => {
+                Object.keys(map).forEach(key => {
                     try {
                         const field = form.getTextField(key);
-                        if (field) field.setText(dataMap[key]);
+                        if (field) field.setText(map[key]);
                     } catch(e) {}
                 });
 
@@ -168,7 +166,7 @@
             const content = await zip.generateAsync({type:"blob"});
             const link = document.createElement('a');
             link.href = URL.createObjectURL(content);
-            link.download = `${document.getElementById('family_name').value || 'Cbus'}_v1.1_Forms.zip`;
+            link.download = `${document.getElementById('family_name').value || 'Cbus'}_v1.2_Bundle.zip`;
             link.click();
             status.innerText = "✅ Done!";
         } catch (err) {
