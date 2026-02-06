@@ -2,38 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cbus Assistant Pro v1.9</title>
+    <title>Cbus Assistant Pro v2.0</title>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; padding: 20px; background: #f0f4f7; line-height: 1.5; }
-        .container { max-width: 650px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .version-badge { float: right; background: #d32f2f; color: white; padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; }
-        h2 { color: #005596; margin-top: 0; border-bottom: 2px solid #005596; padding-bottom: 10px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background: #f0f4f7; color: #333; }
+        .container { max-width: 650px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .v-badge { float: right; background: #b71c1c; color: white; padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; }
+        h2 { color: #005596; border-bottom: 2px solid #005596; padding-bottom: 10px; margin-top: 0; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        label { display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #bbb; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
-        .form-list { background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 8px; max-height: 300px; overflow-y: auto; }
-        .form-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
-        .form-item input { width: auto; margin-right: 12px; }
-        button { width: 100%; padding: 18px; background: #005596; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.2s; }
-        button:hover { background: #003d6b; }
-        #status { text-align: center; margin-top: 15px; font-weight: bold; color: #005596; }
+        label { display: block; font-size: 12px; font-weight: bold; color: #666; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
+        .form-list { background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-top: 20px; }
+        .form-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .form-item input { width: auto; margin-right: 15px; }
+        button { width: 100%; padding: 20px; background: #005596; color: white; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        #status { text-align: center; margin-top: 20px; font-weight: bold; color: #005596; }
     </style>
 </head>
 <body>
 
-<div id="auth-screen" class="container" style="text-align:center;">
-    <span class="version-badge">v1.9</span>
-    <h2>🔒 Secure Access</h2>
-    <p>Enter PIN to access member tools</p>
-    <input type="password" id="pin-input" inputmode="numeric" placeholder="****" style="width:120px; text-align:center; font-size:24px;">
-    <button onclick="checkPin()">Unlock Assistant</button>
-</div>
-
-<div id="main-content" class="container" style="display:none;">
-    <span class="version-badge">v1.9 ACTIVE</span>
-    <h2>🏗️ Cbus Assistant</h2>
+<div id="main-content" class="container">
+    <span class="v-badge">v2.0 ACTIVE</span>
+    <h2>🏗️ Cbus Assistant Pro</h2>
 
     <div class="grid">
         <div><label>Given Name(s)</label><input type="text" id="gn"></div>
@@ -46,7 +37,7 @@
     </div>
 
     <div class="grid">
-        <div><label>TFN</label><input type="text" id="tfn"></div>
+        <div><label>TFN</label><input type="text" id="tfn" maxlength="9"></div>
         <div><label>Mobile</label><input type="tel" id="mob"></div>
     </div>
 
@@ -55,17 +46,17 @@
     
     <div class="grid">
         <div style="flex:2;"><label>Suburb</label><input type="text" id="sub"></div>
-        <div><label>State</label><input type="text" id="st" value="VIC"></div>
+        <div><label>State</label><select id="st"><option>VIC</option><option>NSW</option><option>QLD</option><option>WA</option><option>SA</option><option>TAS</option><option>ACT</option><option>NT</option></select></div>
         <div><label>Postcode</label><input type="text" id="pc"></div>
     </div>
 
-    <div class="form-box">
-        <label>Select All Forms to Process:</label>
-        <div class="form-list" id="form-selection">
+    <div class="form-list">
+        <label style="margin-bottom:10px; display:block;">Select All 11 Forms to Bundle:</label>
+        <div id="check-list">
             <label class="form-item"><input type="checkbox" value="i-want-my-super-paid-into-media-super.pdf"> 1. Media Super Pay-In (Fix Priority)</label>
-            <label class="form-item"><input type="checkbox" value="combine-your-super.pdf"> 2. Combine Your Super</label>
-            <label class="form-item"><input type="checkbox" value="C-join-industry-form.pdf"> 3. Cbus Join Industry</label>
-            <label class="form-item"><input type="checkbox" value="join-industry.pdf"> 4. Media Join Industry</label>
+            <label class="form-item"><input type="checkbox" value="C-join-industry-form.pdf"> 2. Cbus Join Industry</label>
+            <label class="form-item"><input type="checkbox" value="join-industry.pdf"> 3. Media Join Industry</label>
+            <label class="form-item"><input type="checkbox" value="combine-your-super.pdf"> 4. Combine Your Super</label>
             <label class="form-item"><input type="checkbox" value="C-super-withdrawal-form.pdf"> 5. Cbus Withdrawal</label>
             <label class="form-item"><input type="checkbox" value="super-withdrawal-form.pdf"> 6. Media Withdrawal</label>
             <label class="form-item"><input type="checkbox" value="C-Binding-Death-Benefit-Nomination-Form.pdf"> 7. Cbus Death Nom</label>
@@ -76,21 +67,14 @@
         </div>
     </div>
 
-    <button id="dl-btn" onclick="generateBundle()">🚀 Process & Download v1.9</button>
+    <button onclick="runForensicFill()">🚀 Process & Download Bundle</button>
     <div id="status"></div>
 </div>
 
 <script>
-    function checkPin() {
-        if(document.getElementById('pin-input').value === "1234") {
-            document.getElementById('auth-screen').style.display='none';
-            document.getElementById('main-content').style.display='block';
-        } else { alert("Incorrect PIN"); }
-    }
-
-    async function generateBundle() {
-        const selected = Array.from(document.querySelectorAll('#form-selection input:checked'));
-        if (selected.length === 0) return alert("Please select forms.");
+    async function runForensicFill() {
+        const selected = Array.from(document.querySelectorAll('#check-list input:checked'));
+        if (selected.length === 0) return alert("Select at least one form.");
         
         const status = document.getElementById('status');
         const zip = new JSZip();
@@ -98,58 +82,53 @@
         try {
             for (let f of selected) {
                 const fileName = f.value;
-                status.innerText = `Forensic Filling: ${fileName}...`;
+                status.innerText = `🔍 Analyzing: ${fileName}`;
                 
                 const resp = await fetch(`./forms/${fileName}`);
                 const bytes = await resp.arrayBuffer();
                 const pdfDoc = await PDFLib.PDFDocument.load(bytes);
                 const form = pdfDoc.getForm();
-                const allFields = form.getFields();
+                const fields = form.getFields();
 
                 const dobVal = document.getElementById('dob').value;
                 let [y, m, d] = dobVal ? dobVal.split('-') : ["","",""];
                 const t = document.getElementById('tfn').value.replace(/\s/g,'');
 
-                // BRUTE FORCE ITERATION
-                // This looks at every field in the PDF and matches based on internal name
-                allFields.forEach(field => {
+                // RECURSIVE KEYWORD ENGINE
+                fields.forEach(field => {
                     if (field.constructor.name === 'PDFTextField') {
-                        const name = field.getName().toLowerCase();
+                        const internalName = field.getName().toLowerCase();
                         
-                        // Names
-                        if (name.includes('given')) field.setText(document.getElementById('gn').value);
-                        if (name.includes('family')) field.setText(document.getElementById('fn').value);
-                        
-                        // MEMBER NUMBER (The Media Super Fix)
-                        if (name.includes('member') && (name.includes('number') || name.includes('no'))) {
-                            field.setText(document.getElementById('mn').value);
-                        }
-
-                        // STREET ADDRESS (The Address Fix)
-                        if (name.includes('address') && !name.includes('email') && !name.includes('postal')) {
+                        // Addresses (Excludes Email/Postal)
+                        if (internalName.includes('address') && !internalName.includes('email') && !internalName.includes('postal')) {
                             field.setText(document.getElementById('addr').value);
                         }
-
-                        // Location
-                        if (name.includes('suburb')) field.setText(document.getElementById('sub').value);
-                        if (name.includes('state')) field.setText(document.getElementById('st').value);
-                        if (name.includes('postcode')) field.setText(document.getElementById('pc').value);
-
-                        // Contact
-                        if (name.includes('mobile')) field.setText(document.getElementById('mob').value);
-                        if (name.includes('email')) field.setText(document.getElementById('eml').value);
-
-                        // TFN & DOB
-                        if (name.includes('tfn') || name.includes('tax')) {
-                            if (name.includes('1')) field.setText(t.substring(0,3));
-                            else if (name.includes('2')) field.setText(t.substring(3,6));
-                            else if (name.includes('3')) field.setText(t.substring(6,9));
+                        // Member Numbers
+                        if (internalName.includes('member') && (internalName.includes('number') || internalName.includes('no'))) {
+                            field.setText(document.getElementById('mn').value);
+                        }
+                        // Names
+                        if (internalName.includes('given')) field.setText(document.getElementById('gn').value);
+                        if (internalName.includes('family')) field.setText(document.getElementById('fn').value);
+                        // Contacts
+                        if (internalName.includes('mobile')) field.setText(document.getElementById('mob').value);
+                        if (internalName.includes('email')) field.setText(document.getElementById('eml').value);
+                        // Suburb/State/PC
+                        if (internalName.includes('suburb')) field.setText(document.getElementById('sub').value);
+                        if (internalName.includes('state')) field.setText(document.getElementById('st').value);
+                        if (internalName.includes('postcode')) field.setText(document.getElementById('pc').value);
+                        // TFN
+                        if (internalName.includes('tfn') || internalName.includes('tax')) {
+                            if (internalName.includes('1')) field.setText(t.substring(0,3));
+                            else if (internalName.includes('2')) field.setText(t.substring(3,6));
+                            else if (internalName.includes('3')) field.setText(t.substring(6,9));
                             else field.setText(t);
                         }
-                        if (name.includes('birth')) {
-                            if (name.includes('day')) field.setText(d);
-                            if (name.includes('month')) field.setText(m);
-                            if (name.includes('year')) field.setText(y);
+                        // DOB
+                        if (internalName.includes('birth')) {
+                            if (internalName.includes('day')) field.setText(d);
+                            if (internalName.includes('month')) field.setText(m);
+                            if (internalName.includes('year')) field.setText(y);
                         }
                     }
                 });
@@ -158,13 +137,14 @@
                 zip.file(`Filled_${fileName}`, saved);
             }
 
+            status.innerText = "📦 Generating Bundle...";
             const blob = await zip.generateAsync({type:"blob"});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Cbus_v1.9_Bundle.zip`;
+            a.download = `Cbus_Assistant_v2.0.zip`;
             a.click();
-            status.innerText = "✅ Complete!";
+            status.innerText = "✅ Success! Bundle Downloaded.";
         } catch (e) {
             status.innerText = "❌ Error: " + e.message;
         }
