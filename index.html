@@ -7,60 +7,65 @@
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: #f4f7f9; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #005596; text-align: center; margin-bottom: 25px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        .row { display: flex; gap: 10px; }
+        .container { max-width: 650px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #005596; text-align: center; margin-bottom: 20px; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        .row { display: flex; gap: 10px; margin-bottom: 10px; }
         .row div { flex: 1; }
-        button { width: 100%; padding: 15px; background: #005596; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        button { width: 100%; padding: 15px; background: #005596; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
         button:active { background: #003d6b; transform: scale(0.98); }
         #auth-screen { text-align: center; padding: 50px 20px; }
         #main-content { display: none; }
-        .status { margin-top: 15px; font-size: 14px; text-align: center; color: #666; }
+        .form-list { background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-top: 10px; }
+        .form-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 15px; cursor: pointer; }
+        .form-item input { width: auto; cursor: pointer; }
+        .status { margin-top: 15px; font-size: 14px; text-align: center; font-weight: bold; color: #005596; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" class="container">
         <h2>🔒 Secure Access</h2>
-        <p>Enter PIN to access the tool</p>
-        <input type="password" id="pin-input" inputmode="numeric" placeholder="0000" maxlength="4">
+        <input type="password" id="pin-input" inputmode="numeric" placeholder="Enter PIN" maxlength="4">
         <button onclick="checkPin()">Unlock Tool</button>
     </div>
 
     <div id="main-content" class="container">
         <h2>🏗️ Cbus Assistant</h2>
         
-        <div class="input-group">
-            <label>Given Name(s)</label>
-            <input type="text" id="given_names" placeholder="e.g. John David">
-        </div>
-        <div class="input-group">
-            <label>Family Name</label>
-            <input type="text" id="family_name" placeholder="e.g. Smith">
+        <div class="row">
+            <div><label>Given Name(s)</label><input type="text" id="given_names"></div>
+            <div><label>Family Name</label><input type="text" id="family_name"></div>
         </div>
 
         <div class="row">
-            <div class="input-group">
-                <label>Member Number</label>
-                <input type="text" id="member_no">
-            </div>
-            <div class="input-group">
-                <label>Date of Birth</label>
-                <input type="date" id="dob">
-            </div>
+            <div><label>Member Number</label><input type="text" id="member_no"></div>
+            <div><label>Date of Birth</label><input type="date" id="dob"></div>
+        </div>
+
+        <div class="row">
+            <div><label>TFN (9 digits)</label><input type="text" id="tfn" inputmode="numeric"></div>
+            <div><label>Mobile Number</label><input type="tel" id="mobile"></div>
         </div>
 
         <div class="input-group">
-            <label>TFN (9 digits)</label>
-            <input type="text" id="tfn" inputmode="numeric" placeholder="123 456 789">
+            <label>Residential Address</label>
+            <input type="text" id="address">
         </div>
 
-        <div class="input-group">
-            <label>Mobile Number</label>
-            <input type="tel" id="mobile">
+        <div class="row">
+            <div style="flex: 2;"><label>Suburb</label><input type="text" id="suburb"></div>
+            <div><label>State</label>
+                <select id="state">
+                    <option value="VIC">VIC</option><option value="NSW">NSW</option>
+                    <option value="QLD">QLD</option><option value="WA">WA</option>
+                    <option value="SA">SA</option><option value="TAS">TAS</option>
+                    <option value="ACT">ACT</option><option value="NT">NT</option>
+                </select>
+            </div>
+            <div><label>Postcode</label><input type="text" id="postcode"></div>
         </div>
 
         <div class="input-group">
@@ -69,116 +74,94 @@
         </div>
 
         <hr>
-        <label>Step 1: Choose Form Template</label>
-        <select id="form-selector">
-            <option value="super-withdrawal-form.pdf">Super Withdrawal Form</option>
-            <option value="combine-your-super.pdf">Combine Your Super</option>
-            <option value="binding-death-nomination.pdf">Binding Death Nomination</option>
-            <option value="i-want-my-super-paid-into-media-super.pdf">Pay Into Media Super</option>
-        </select>
+        <label>Step 1: Select Forms to Fill</label>
+        <div class="form-list" id="form-checkboxes">
+            <label class="form-item"><input type="checkbox" value="super-withdrawal-form.pdf"> Withdrawal Form</label>
+            <label class="form-item"><input type="checkbox" value="combine-your-super.pdf"> Roll-over Form</label>
+            <label class="form-item"><input type="checkbox" value="binding-death-nomination.pdf"> Death Nomination</label>
+            <label class="form-item"><input type="checkbox" value="i-want-my-super-paid-into-media-super.pdf"> Media Super Pay-In</label>
+        </div>
 
-        <button onclick="processPdf()">🚀 Fill & Download PDF</button>
+        <button onclick="processAllSelected()">🚀 Fill & Download Selected</button>
         <div id="status" class="status"></div>
     </div>
 
     <script>
-        const SECRET_PIN = "1234"; // <--- CHANGE THIS TO YOUR PIN
+        const SECRET_PIN = "1234"; 
 
         function checkPin() {
-            const input = document.getElementById('pin-input').value;
-            if (input === SECRET_PIN) {
+            if (document.getElementById('pin-input').value === SECRET_PIN) {
                 document.getElementById('auth-screen').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
-            } else {
-                alert("Incorrect PIN");
-            }
+            } else { alert("Incorrect PIN"); }
         }
 
-        async function processPdf() {
+        async function processAllSelected() {
+            const selected = Array.from(document.querySelectorAll('#form-checkboxes input:checked'));
+            if (selected.length === 0) return alert("Please select at least one form.");
+            
             const status = document.getElementById('status');
-            const formName = document.getElementById('form-selector').value;
-            const pdfUrl = `./forms/${formName}`;
-
-            status.innerText = "⏳ Fetching template...";
-
-            try {
-                // Fetch the PDF (Works on iOS because we are on GitHub HTTPS)
-                const existingPdfBytes = await fetch(pdfUrl).then(res => {
-                    if (!res.ok) throw new Error("Template not found in /forms folder");
-                    return res.arrayBuffer();
-                });
-
-                status.innerText = "✍️ Filling fields...";
-
-                const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
-                const form = pdfDoc.getForm();
-
-                // Prepare Data
-                const dobVal = document.getElementById('dob').value; // YYYY-MM-DD
-                let dobD = "", dobM = "", dobY = "";
-                if(dobVal) {
-                    const d = new Date(dobVal);
-                    dobD = String(d.getDate()).padStart(2, '0');
-                    dobM = String(d.getMonth() + 1).padStart(2, '0');
-                    dobY = String(d.getFullYear());
-                }
-
-                const tfnVal = document.getElementById('tfn').value.replace(/\s/g, '');
-                const t1 = tfnVal.substring(0,3), t2 = tfnVal.substring(3,6), t3 = tfnVal.substring(6,9);
-
-                const now = new Date();
-                const curD = String(now.getDate()).padStart(2, '0');
-                const curM = String(now.getMonth() + 1).padStart(2, '0');
-                const curY_full = String(now.getFullYear());
-                const curY_short = curY_full.substring(2);
-
-                // Mapping Object (Based on your sidebar findings)
-                const dataMap = {
-                    'Given names': document.getElementById('given_names').value,
-                    'First names': document.getElementById('given_names').value,
-                    '8138573-Given_Names': document.getElementById('given_names').value,
-                    'Family name': document.getElementById('family_name').value,
-                    '8138573-Family_Name': document.getElementById('family_name').value,
-                    'Member number': document.getElementById('member_no').value,
-                    'MEMBER number': document.getElementById('member_no').value,
-                    'Cbus member number': document.getElementById('member_no').value,
-                    '8138573-member_number': document.getElementById('member_no').value,
-                    'Date of birth day': dobD, 'Date of birth month': dobM, 'Date of birth year': dobY,
-                    'TFN1': t1, 'TFN2': t2, 'TFN3': t3,
-                    '8138573-TFN1': t1, '8138573-TFN2': t2, '8138573-TFN3': t3,
-                    'mobile': document.getElementById('mobile').value,
-                    'mobile1': document.getElementById('mobile').value,
-                    'Telephone mobile': document.getElementById('mobile').value,
-                    'Email address': document.getElementById('email').value,
-                    'decDD': curD, 'decMM': curM, 'decYYYY': curY_full,
-                    'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curY_short,
-                    'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curY_short,
-                    'Join - Declaration DD': curD, 'Join - Declaration MM': curM, 'Join - Declaration YY': curY_short,
-                    '8138576-Sign_Date_Day': curD, '8138576-Sign_Date_Month': curM, '8138576-Sign_Date_Year': curY_full
-                };
-
-                // Apply to form
-                Object.keys(dataMap).forEach(key => {
-                    try {
-                        const field = form.getTextField(key);
-                        field.setText(dataMap[key]);
-                    } catch (e) { /* Field not in this specific PDF */ }
-                });
-
-                const pdfBytes = await pdfDoc.save();
-                
-                // Trigger Download for iOS
-                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `Filled_${formName}`;
-                link.click();
-
-                status.innerText = "✅ Download started!";
-            } catch (err) {
-                status.innerText = "❌ Error: " + err.message;
-                console.error(err);
+            
+            for (let i = 0; i < selected.length; i++) {
+                const fileName = selected[i].value;
+                status.innerText = `⏳ Processing (${i+1}/${selected.length}): ${fileName}`;
+                await fillSinglePdf(fileName);
+                // Tiny delay to help mobile browsers handle multiple downloads
+                await new Promise(r => setTimeout(r, 800));
             }
+            status.innerText = "✅ All Selected Forms Downloaded!";
+        }
+
+        async function fillSinglePdf(formName) {
+            const pdfUrl = `./forms/${formName}`;
+            const existingPdfBytes = await fetch(pdfUrl).then(res => res.arrayBuffer());
+            const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+            const form = pdfDoc.getForm();
+
+            // DOB Splitting
+            const dobVal = document.getElementById('dob').value;
+            let dobD = "", dobM = "", dobY = "";
+            if(dobVal) {
+                const d = new Date(dobVal);
+                dobD = String(d.getDate()).padStart(2, '0');
+                dobM = String(d.getMonth() + 1).padStart(2, '0');
+                dobY = String(d.getFullYear());
+            }
+
+            // TFN Splitting
+            const tfnVal = document.getElementById('tfn').value.replace(/\s/g, '');
+            const t1 = tfnVal.substring(0,3), t2 = tfnVal.substring(3,6), t3 = tfnVal.substring(6,9);
+
+            // Mapping
+            const dataMap = {
+                'Given names': document.getElementById('given_names').value,
+                '8138573-Given_Names': document.getElementById('given_names').value,
+                'Family name': document.getElementById('family_name').value,
+                '8138573-Family_Name': document.getElementById('family_name').value,
+                'Member number': document.getElementById('member_no').value,
+                '8138573-member_number': document.getElementById('member_no').value,
+                'Date of birth day': dobD, 'Date of birth month': dobM, 'Date of birth year': dobY,
+                'TFN1': t1, 'TFN2': t2, 'TFN3': t3,
+                '8138573-TFN1': t1, '8138573-TFN2': t2, '8138573-TFN3': t3,
+                'Residential address (compulsory)': document.getElementById('address').value,
+                'Street Number and Name': document.getElementById('address').value,
+                'Suburb/town': document.getElementById('suburb').value,
+                'State': document.getElementById('state').value,
+                'Postcode': document.getElementById('postcode').value,
+                'Telephone mobile': document.getElementById('mobile').value,
+                'Email address': document.getElementById('email').value
+            };
+
+            Object.keys(dataMap).forEach(key => {
+                try { form.getTextField(key).setText(dataMap[key]); } catch (e) {}
+            });
+
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Filled_${formName}`;
+            link.click();
         }
     </script>
 </body>
