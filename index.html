@@ -2,83 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cbus & Media Super Assistant Pro</title>
-    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <title>Cbus & Media Super Assistant v2.5</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        :root { --cbus-green: #009354; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid var(--cbus-green); }
-        h1 { text-align: center; color: var(--cbus-green); margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .section-header { grid-column: 1 / -1; background: #e8f5e9; padding: 10px 15px; border-radius: 6px; font-weight: bold; color: var(--cbus-green); margin-top: 20px; }
-        .field-group { display: flex; flex-direction: column; }
-        label { font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #666; text-transform: uppercase; }
-        input, select { padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-        input:focus { border-color: var(--cbus-green); outline: none; box-shadow: 0 0 0 3px rgba(0,147,84,0.1); }
-        .form-selector { margin-top: 30px; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
-        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .check-item { display: flex; align-items: center; font-size: 14px; cursor: pointer; }
-        .check-item input { margin-right: 10px; width: auto; }
-        .btn-run { width: 100%; background: var(--cbus-green); color: white; border: none; padding: 20px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 30px; transition: 0.3s; }
-        .btn-run:hover { background: #007a45; transform: translateY(-2px); }
-        #status { text-align: center; margin-top: 20px; font-weight: bold; color: var(--cbus-green); }
+        :root { --cbus-green: #009354; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f7; padding: 20px; }
+        .card { background: white; max-width: 850px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--cbus-green); }
+        h2 { color: var(--cbus-green); text-align: center; margin-bottom: 25px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        label { display: block; font-size: 11px; font-weight: bold; color: #555; text-transform: uppercase; margin-bottom: 4px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        .section-header { grid-column: span 3; color: var(--cbus-green); font-size: 13px; border-bottom: 1px solid #eee; margin-top: 15px; padding-bottom: 5px; font-weight: bold; }
+        .upload-zone { border: 2px dashed var(--cbus-green); padding: 30px; text-align: center; margin-top: 20px; background: #f4fbf7; border-radius: 8px; cursor: pointer; }
+        .btn-run { width: 100%; padding: 18px; background: var(--cbus-green); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        #status { text-align: center; margin-top: 15px; font-weight: bold; color: var(--cbus-green); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🏗️ Cbus & Media Super Assistant Pro</h1>
+<div class="card">
+    <h2>🏗️ Cbus Assistant Master (Forensic Build)</h2>
     
     <div class="grid">
-        <div class="section-header">Primary Identity</div>
-        <div class="field-group"><label>Member Number</label><input type="text" id="mem_no"></div>
-        <div class="field-group"><label>Given Name(s)</label><input type="text" id="gn"></div>
-        <div class="field-group"><label>Family Name</label><input type="text" id="fn"></div>
-        <div class="field-group"><label>Date of Birth</label><input type="date" id="dob"></div>
-        <div class="field-group" style="grid-column: span 2;"><label>Tax File Number</label><input type="text" id="tfn" placeholder="000 000 000"></div>
+        <div class="section-header">1. Member Info</div>
+        <div><label>Member Number</label><input type="text" id="m_no"></div>
+        <div><label>Given Name(s)</label><input type="text" id="gn"></div>
+        <div><label>Family Name</label><input type="text" id="fn"></div>
+        <div><label>Date of Birth</label><input type="date" id="dob"></div>
+        <div style="grid-column: span 2;"><label>Tax File Number</label><input type="text" id="tfn"></div>
 
-        <div class="section-header">Contact & Address</div>
-        <div class="field-group"><label>Mobile</label><input type="text" id="mob"></div>
-        <div class="field-group" style="grid-column: span 2;"><label>Email Address</label><input type="text" id="eml"></div>
-        <div class="field-group" style="grid-column: span 3;"><label>Residential Street Address</label><input type="text" id="addr"></div>
-        <div class="field-group"><label>Suburb</label><input type="text" id="sub"></div>
-        <div class="field-group"><label>State</label><input type="text" id="st" value="VIC"></div>
-        <div class="field-group"><label>Postcode</label><input type="text" id="pc"></div>
+        <div class="section-header">2. Contact & Address</div>
+        <div><label>Mobile</label><input type="text" id="mob"></div>
+        <div style="grid-column: span 2;"><label>Email Address</label><input type="email" id="eml"></div>
+        <div style="grid-column: span 3;"><label>Street Address</label><input type="text" id="addr"></div>
+        <div><label>Suburb</label><input type="text" id="sub"></div>
+        <div><label>State</label><input type="text" id="st" value="VIC"></div>
+        <div><label>Postcode</label><input type="text" id="pc"></div>
     </div>
 
-    <div class="form-selector">
-        <label>Select Documents to Process:</label>
-        <div class="checkbox-grid" id="formList">
-            <label class="check-item"><input type="checkbox" value="Change-Income-Stream-Details-Form.pdf"> Income Stream Details</label>
-            <label class="check-item"><input type="checkbox" value="Change-Details-Form.pdf"> Change Details</label>
-            <label class="check-item"><input type="checkbox" value="Change-Occupation-Form.pdf"> Change Occupation</label>
-            <label class="check-item"><input type="checkbox" value="App-Increase-Cover-Living-Events.pdf"> Increase Cover (Events)</label>
-            <label class="check-item"><input type="checkbox" value="Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> Insurance Transfer (Cbus)</label>
-            <label class="check-item"><input type="checkbox" value="Change-Insurance-Form-Industry-Super.pdf"> Change Insurance</label>
-            <label class="check-item"><input type="checkbox" value="Binding-Death-Benefit-Nomination-Form.pdf"> Death Benefit Nom</label>
-            <label class="check-item"><input type="checkbox" value="Combine-Form.pdf"> Combine Super</label>
-            <label class="check-item"><input type="checkbox" value="super-withdrawal-form.pdf"> Super Withdrawal</label>
-            <label class="check-item"><input type="checkbox" value="Rollover-Form.pdf"> Rollover Form</label>
-            <label class="check-item"><input type="checkbox" value="I-want-my-super-paid-into-Cbus.pdf"> Pay into Cbus</label>
-            <label class="check-item"><input type="checkbox" value="join-industry-form.pdf"> Join Industry Form</label>
-        </div>
+    <div class="upload-zone" onclick="document.getElementById('pdfFiles').click()">
+        <strong>📁 Click to Select PDF Forms from your PC</strong>
+        <input type="file" id="pdfFiles" multiple accept=".pdf" style="display:none;" onchange="updateStatus()">
+        <div id="fileInfo" style="font-size: 12px; margin-top: 5px; color: #666;">No files selected</div>
     </div>
 
-    <button class="btn-run" onclick="processDocs()">🚀 Process & Download Bundle</button>
+    <button class="btn-run" onclick="processBatch()">🚀 Process Bundle</button>
     <div id="status"></div>
 </div>
 
 <script>
-    async function processDocs() {
-        const selected = Array.from(document.querySelectorAll('#formList input:checked'));
-        if (selected.length === 0) return alert("Please select at least one form.");
+    function updateStatus() {
+        const count = document.getElementById('pdfFiles').files.length;
+        document.getElementById('fileInfo').innerText = `${count} files ready to process.`;
+    }
+
+    async function processBatch() {
+        const files = Array.from(document.getElementById('pdfFiles').files);
+        if (files.length === 0) return alert("Please upload the PDF forms first.");
         
         const status = document.getElementById('status');
         const zip = new JSZip();
 
-        // Data Prep
+        // Prepare Date & TFN Data
         const dobVal = document.getElementById('dob').value;
         const [y, m, d] = dobVal ? dobVal.split('-') : ['', '', ''];
         const t = document.getElementById('tfn').value.replace(/\s/g, '');
@@ -89,7 +75,7 @@
         const curYY = curYYYY.substring(2);
 
         const data = {
-            mem: document.getElementById('mem_no').value,
+            mem: document.getElementById('m_no').value,
             gn: document.getElementById('gn').value,
             fn: document.getElementById('fn').value,
             mob: document.getElementById('mob').value,
@@ -101,82 +87,71 @@
         };
 
         try {
-            for (let formInput of selected) {
-                const fileName = formInput.value;
-                status.innerText = `🔍 Filling: ${fileName}...`;
-                
-                // Fetch from your GitHub folder structure
-                const resp = await fetch(`./forms/Cbus/${fileName}`);
-                const bytes = await resp.arrayBuffer();
+            for (const file of files) {
+                status.innerText = `✍️ Applying Forensic Map to: ${file.name}`;
+                const bytes = await file.arrayBuffer();
                 const pdfDoc = await PDFLib.PDFDocument.load(bytes);
                 const form = pdfDoc.getForm();
 
-                // THE DIAGNOSTIC DEEP DIVE MAP
-                const map = {
-                    // Identity & Name Variants
+                // THE COMPREHENSIVE MAPPING (Matches your Diagnostic Deep Dive)
+                const masterMap = {
+                    // Identification
                     'Cbus member number': data.mem, 'Member Number': data.mem, 'Member number': data.mem, 'MEMBER number': data.mem, 
-                    '8039653-member_number': data.mem, 'Media Super member number': data.mem, 'Cbus Super member number, if known': data.mem,
-                    'Given names': data.gn, 'First names': data.gn, 'Given name(s)': data.gn, '8039653-Given_Names': data.gn, '2B - First names': data.gn,
-                    'Family name': data.fn, '8039653-Family_Name': data.fn, '2B - Family name': data.fn,
+                    '8039653-member_number': data.mem, 'Media Super member number': data.mem, '8138573-member_number': data.mem,
+                    'Given names': data.gn, 'First names': data.gn, 'Given name(s)': data.gn, '8039653-Given_Names': data.gn, '8138573-Given_Names': data.gn,
+                    'Family name': data.fn, '8039653-Family_Name': data.fn, '8138573-Family_Name': data.fn,
                     
-                    // Date of Birth Variants
+                    // Dates
                     'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
                     '2B - Date of birth day': d, '2B - Date of birth month': m, '2B - Date of birth year': y,
 
-                    // Address - Residential (The "r" fields from your audit)
-                    'Street Number Name RES': data.addr, 'Residential address': data.addr, 'residential address': data.addr,
-                    'Street Number and Name': data.addr, 'Street Number': data.addr, 'Street Name': data.addr,
+                    // Forensic Address IDs
+                    'Street Number Name RES': data.addr, 'Street Number and Name': data.addr, 'Street Number': data.addr, 'Street Name': data.addr,
+                    'Residential address (compulsory)': data.addr, 'Residential address': data.addr, 'residential address': data.addr,
                     'Suburb/town RES': data.sub, 'Suburb/town': data.sub, 'step 2 - resid suburb/town': data.sub,
                     'State RES': data.st, 'State': data.st, 'step 2 - resid state': data.st,
                     'Postcode RES': data.pc, 'Postcode': data.pc, 'step 2 - resid postcode': data.pc,
 
-                    // Contact Variants
+                    // Forensic Contact IDs
                     'mobile1': data.mob, 'mobile': data.mob, 'Telephone mobile': data.mob, 'step 2 - Telephone mobile': data.mob,
                     'Email address': data.eml, 'Email Address': data.eml, 'email address': data.eml, 'Step 2 - email address': data.eml,
-                    'Telephone home': data.mob, 'Telephone home1': data.mob, 'Telephone home2': data.mob, // Fallback home to mobile
+                    'Telephone home': data.mob, 'Telephone home1': data.mob,
 
-                    // TFN (Split variants)
+                    // TFN
                     'TFN1': t.substring(0,3), 'TFN2': t.substring(3,6), 'TFN3': t.substring(6,9),
                     '8039653-TFN1': t.substring(0,3), '8039653-TFN2': t.substring(3,6), '8039653-TFN3': t.substring(6,9),
+                    '8138573-TFN1': t.substring(0,3), '8138573-TFN2': t.substring(3,6), '8138573-TFN3': t.substring(6,9),
 
-                    // Signature Dates (Step 6, Step 4, decDD etc)
-                    'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY, 'Declaration DD': curD, 'Declaration MM': curM, 'Declaration YY': curYY,
+                    // Signature & Form Dates
+                    'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY,
                     'Step 6 - DD': curD, 'Step 6 - MM': curM, 'Step 6 - YYYY': curYYYY,
                     'Step 4 - DD': curD, 'Step 4 - MM': curM, 'Step 4 - YYYY': curYYYY,
                     'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
-                    '3 Step 3 date': curD, '3 Step 3 date MM': curM, '3 Step 3 date YY': curYY,
-                    '4 Step 3 date': curD, '4 Step 3 date MM': curM, '4 Step 3 date YY': curYY,
-                    'Join - Declaration DD': curD, 'Join - Declaration MM': curM, 'Join - Declaration YY': curYY,
-                    'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curYY,
+                    'Declaration DD': curD, 'Declaration MM': curM, 'Declaration YY': curYY,
                     '8039778-Sign_Date_Day': curD, '8039778-Sign_Date_Month': curM, '8039778-Sign_Date_Year': curYYYY,
-                    '12 form 1 sign DD': curD, '12 form 1 sign MM': curM, '12 form 1 sign YY': curYY
+                    '12 form 1 sign DD': curD, '12 form 1 sign MM': curM, '12 form 1 sign YY': curYY,
+                    '8138576-Sign_Date_Day': curD, '8138576-Sign_Date_Month': curM, '8138576-Sign_Date_Year': curYYYY
                 };
 
-                // Loop through and fill
-                Object.keys(map).forEach(key => {
-                    try {
-                        const field = form.getTextField(key);
-                        field.setText(map[key] || '');
-                    } catch (e) {
-                        // Field doesn't exist in this specific PDF, skip silently
-                    }
+                Object.entries(masterMap).forEach(([field, val]) => {
+                    try { form.getTextField(field).setText(val); } catch(e) {}
                 });
 
                 const pdfBytes = await pdfDoc.save();
-                zip.file(`Filled_${fileName}`, pdfBytes);
+                zip.file(`Filled_${file.name}`, pdfBytes);
             }
 
-            status.innerText = "📦 Creating ZIP bundle...";
-            const content = await zip.generateAsync({type:"blob"});
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = `Cbus_Assistant_Batch_${curYYYY}${curM}${curD}.zip`;
-            link.click();
-            status.innerText = "✅ Batch Complete!";
+            status.innerText = "📦 Zipping Files...";
+            const blob = await zip.generateAsync({type:"blob"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `Cbus_Bundle_${curYYYY}.zip`;
+            a.click();
+            status.innerText = "✅ Done! Check your downloads.";
 
         } catch (err) {
             console.error(err);
-            status.innerText = "❌ Error: " + err.message;
+            status.innerText = "❌ Forensic Error: " + err.message;
         }
     }
 </script>
