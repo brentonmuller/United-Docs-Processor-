@@ -2,76 +2,85 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cbus & Media Super Assistant v2.4</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cbus & Media Super Assistant Pro</title>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f7; padding: 20px; }
-        .card { background: white; max-width: 800px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.1); border-top: 8px solid #009354; }
-        h2 { color: #009354; text-align: center; margin-bottom: 25px; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-        label { display: block; font-size: 11px; font-weight: bold; color: #555; text-transform: uppercase; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 11px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        .form-section { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #ddd; }
-        .form-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
-        .form-row input { width: auto; margin-right: 12px; }
-        .btn-run { width: 100%; padding: 18px; background: #009354; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; }
-        #status { text-align: center; margin-top: 15px; font-weight: bold; color: #009354; }
-        .section-header { grid-column: span 3; color: #009354; font-size: 13px; border-bottom: 1px solid #eee; margin-top: 15px; padding-bottom: 5px; font-weight: bold; }
+        :root { --cbus-green: #009354; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid var(--cbus-green); }
+        h1 { text-align: center; color: var(--cbus-green); margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .section-header { grid-column: 1 / -1; background: #e8f5e9; padding: 10px 15px; border-radius: 6px; font-weight: bold; color: var(--cbus-green); margin-top: 20px; }
+        .field-group { display: flex; flex-direction: column; }
+        label { font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #666; text-transform: uppercase; }
+        input, select { padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        input:focus { border-color: var(--cbus-green); outline: none; box-shadow: 0 0 0 3px rgba(0,147,84,0.1); }
+        .form-selector { margin-top: 30px; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
+        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .check-item { display: flex; align-items: center; font-size: 14px; cursor: pointer; }
+        .check-item input { margin-right: 10px; width: auto; }
+        .btn-run { width: 100%; background: var(--cbus-green); color: white; border: none; padding: 20px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 30px; transition: 0.3s; }
+        .btn-run:hover { background: #007a45; transform: translateY(-2px); }
+        #status { text-align: center; margin-top: 20px; font-weight: bold; color: var(--cbus-green); }
     </style>
 </head>
 <body>
 
-<div id="app" class="card">
-    <h2>🏗️ Cbus Assistant Pro v2.4</h2>
+<div class="container">
+    <h1>🏗️ Cbus & Media Super Assistant Pro</h1>
     
     <div class="grid">
-        <div class="section-header">Member Identification</div>
-        <div><label>Member Number</label><input type="text" id="m_no"></div>
-        <div><label>Given Name(s)</label><input type="text" id="g_name"></div>
-        <div><label>Family Name</label><input type="text" id="f_name"></div>
-        <div><label>Date of Birth</label><input type="date" id="dob"></div>
-        <div style="grid-column: span 2;"><label>Tax File Number</label><input type="text" id="tfn"></div>
+        <div class="section-header">Primary Identity</div>
+        <div class="field-group"><label>Member Number</label><input type="text" id="mem_no"></div>
+        <div class="field-group"><label>Given Name(s)</label><input type="text" id="gn"></div>
+        <div class="field-group"><label>Family Name</label><input type="text" id="fn"></div>
+        <div class="field-group"><label>Date of Birth</label><input type="date" id="dob"></div>
+        <div class="field-group" style="grid-column: span 2;"><label>Tax File Number</label><input type="text" id="tfn" placeholder="000 000 000"></div>
 
-        <div class="section-header">Contact & Residential Address</div>
-        <div><label>Mobile</label><input type="text" id="mob"></div>
-        <div style="grid-column: span 2;"><label>Email Address</label><input type="email" id="eml"></div>
-        <div style="grid-column: span 3;"><label>Street Address</label><input type="text" id="addr"></div>
-        <div><label>Suburb</label><input type="text" id="sub"></div>
-        <div><label>State</label><input type="text" id="st" value="VIC"></div>
-        <div><label>Postcode</label><input type="text" id="pc"></div>
+        <div class="section-header">Contact & Address</div>
+        <div class="field-group"><label>Mobile</label><input type="text" id="mob"></div>
+        <div class="field-group" style="grid-column: span 2;"><label>Email Address</label><input type="text" id="eml"></div>
+        <div class="field-group" style="grid-column: span 3;"><label>Residential Street Address</label><input type="text" id="addr"></div>
+        <div class="field-group"><label>Suburb</label><input type="text" id="sub"></div>
+        <div class="field-group"><label>State</label><input type="text" id="st" value="VIC"></div>
+        <div class="field-group"><label>Postcode</label><input type="text" id="pc"></div>
     </div>
 
-    <div class="form-section">
-        <label>Select All 11 Forms to Bundle:</label>
-        <div id="form-list">
-            <label class="form-row"><input type="checkbox" value="i-want-my-super-paid-into-media-super.pdf"> 1. Media Super Pay-In</label>
-            <label class="form-row"><input type="checkbox" value="combine-your-super.pdf"> 2. Combine Your Super</label>
-            <label class="form-row"><input type="checkbox" value="C-join-industry-form.pdf"> 3. Cbus Join Industry</label>
-            <label class="form-row"><input type="checkbox" value="join-industry.pdf"> 4. Media Join Industry</label>
-            <label class="form-row"><input type="checkbox" value="C-super-withdrawal-form.pdf"> 5. Cbus Withdrawal</label>
-            <label class="form-row"><input type="checkbox" value="super-withdrawal-form.pdf"> 6. Media Withdrawal</label>
-            <label class="form-row"><input type="checkbox" value="C-Binding-Death-Benefit-Nomination-Form.pdf"> 7. Cbus Death Nom</label>
-            <label class="form-row"><input type="checkbox" value="binding-death-nomination.pdf"> 8. Media Death Nom</label>
-            <label class="form-row"><input type="checkbox" value="C-Change-Insurance-Form-Industry-Super.pdf"> 9. Cbus Change Insurance</label>
-            <label class="form-row"><input type="checkbox" value="C-Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> 10. Cbus Transfer Insurance</label>
-            <label class="form-row"><input type="checkbox" value="application-transfer-existing-insurance-cover.pdf"> 11. Media Transfer Insurance</label>
+    <div class="form-selector">
+        <label>Select Documents to Process:</label>
+        <div class="checkbox-grid" id="formList">
+            <label class="check-item"><input type="checkbox" value="Change-Income-Stream-Details-Form.pdf"> Income Stream Details</label>
+            <label class="check-item"><input type="checkbox" value="Change-Details-Form.pdf"> Change Details</label>
+            <label class="check-item"><input type="checkbox" value="Change-Occupation-Form.pdf"> Change Occupation</label>
+            <label class="check-item"><input type="checkbox" value="App-Increase-Cover-Living-Events.pdf"> Increase Cover (Events)</label>
+            <label class="check-item"><input type="checkbox" value="Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> Insurance Transfer (Cbus)</label>
+            <label class="check-item"><input type="checkbox" value="Change-Insurance-Form-Industry-Super.pdf"> Change Insurance</label>
+            <label class="check-item"><input type="checkbox" value="Binding-Death-Benefit-Nomination-Form.pdf"> Death Benefit Nom</label>
+            <label class="check-item"><input type="checkbox" value="Combine-Form.pdf"> Combine Super</label>
+            <label class="check-item"><input type="checkbox" value="super-withdrawal-form.pdf"> Super Withdrawal</label>
+            <label class="check-item"><input type="checkbox" value="Rollover-Form.pdf"> Rollover Form</label>
+            <label class="check-item"><input type="checkbox" value="I-want-my-super-paid-into-Cbus.pdf"> Pay into Cbus</label>
+            <label class="check-item"><input type="checkbox" value="join-industry-form.pdf"> Join Industry Form</label>
         </div>
     </div>
 
-    <button class="btn-run" onclick="process()">🚀 Fill & Download Bundle</button>
+    <button class="btn-run" onclick="processDocs()">🚀 Process & Download Bundle</button>
     <div id="status"></div>
 </div>
 
 <script>
-    async function process() {
-        const selected = Array.from(document.querySelectorAll('#form-list input:checked'));
-        if (selected.length === 0) return alert("Select a form!");
+    async function processDocs() {
+        const selected = Array.from(document.querySelectorAll('#formList input:checked'));
+        if (selected.length === 0) return alert("Please select at least one form.");
+        
         const status = document.getElementById('status');
         const zip = new JSZip();
 
-        const dob = document.getElementById('dob').value;
-        const [y, m, d] = dob ? dob.split('-') : ['', '', ''];
+        // Data Prep
+        const dobVal = document.getElementById('dob').value;
+        const [y, m, d] = dobVal ? dobVal.split('-') : ['', '', ''];
         const t = document.getElementById('tfn').value.replace(/\s/g, '');
         const now = new Date();
         const curD = String(now.getDate()).padStart(2, '0');
@@ -80,74 +89,95 @@
         const curYY = curYYYY.substring(2);
 
         const data = {
-            mem: document.getElementById('m_no').value,
-            gn: document.getElementById('g_name').value,
-            fn: document.getElementById('f_name').value,
+            mem: document.getElementById('mem_no').value,
+            gn: document.getElementById('gn').value,
+            fn: document.getElementById('fn').value,
             mob: document.getElementById('mob').value,
             eml: document.getElementById('eml').value,
-            adr: document.getElementById('addr').value,
+            addr: document.getElementById('addr').value,
             sub: document.getElementById('sub').value,
             st: document.getElementById('st').value,
             pc: document.getElementById('pc').value
         };
 
         try {
-            for (let item of selected) {
-                const fileName = item.value;
-                status.innerText = `Filling: ${fileName}`;
-                const resp = await fetch(`./forms/${fileName}`);
+            for (let formInput of selected) {
+                const fileName = formInput.value;
+                status.innerText = `🔍 Filling: ${fileName}...`;
+                
+                // Fetch from your GitHub folder structure
+                const resp = await fetch(`./forms/Cbus/${fileName}`);
                 const bytes = await resp.arrayBuffer();
                 const pdfDoc = await PDFLib.PDFDocument.load(bytes);
                 const form = pdfDoc.getForm();
 
-                // COMPREHENSIVE MAP FIXING YOUR GAPS
+                // THE DIAGNOSTIC DEEP DIVE MAP
                 const map = {
-                    // 1. GIVEN NAMES (Restored for Withdrawal & Join)
-                    'Given names': data.gn, 'Given name(s)': data.gn, 'First names': data.gn, '8138573-Given_Names': data.gn, 'Step 1 Given names': data.gn,
+                    // Identity & Name Variants
+                    'Cbus member number': data.mem, 'Member Number': data.mem, 'Member number': data.mem, 'MEMBER number': data.mem, 
+                    '8039653-member_number': data.mem, 'Media Super member number': data.mem, 'Cbus Super member number, if known': data.mem,
+                    'Given names': data.gn, 'First names': data.gn, 'Given name(s)': data.gn, '8039653-Given_Names': data.gn, '2B - First names': data.gn,
+                    'Family name': data.fn, '8039653-Family_Name': data.fn, '2B - Family name': data.fn,
                     
-                    // 2. RESIDENTIAL ADDRESS (Restored for Insurance & Combine)
-                    'Residential address (compulsory)': data.adr, 'Residential address': data.adr, 'Street address': data.adr, 'Street Name': data.adr, 'Street Number and Name': data.adr,
-                    
-                    // 3. TAX FILE NUMBER (Full & Split)
-                    'Tax file number': t, 'Tax File Number': t, 'Step 1 Tax file number TFN': t,
-                    'TFN1': t.substring(0,3), 'TFN2': t.substring(3,6), 'TFN3': t.substring(6,9),
-                    '8138573-TFN1': t.substring(0,3), '8138573-TFN2': t.substring(3,6), '8138573-TFN3': t.substring(6,9),
-
-                    // 4. MOBILE (All variations for Combine & Insurance)
-                    'Mobile': data.mob, 'mobile': data.mob, 'mobile1': data.mob, 'Telephone mobile': data.mob, 'Mobile phone': data.mob,
-
-                    // 5. MEMBER NUMBER (Restored for Death Nom & Insurance)
-                    'Member number': data.mem, 'Cbus Super member number, if known': data.mem, 'Media Super member number': data.mem, 'Step 1 Media Super member number': data.mem, '8138573-member_number': data.mem,
-
-                    // 6. EMAIL
-                    'Email address': data.eml, 'Email Address': data.eml,
-
-                    // 7. LOCATION & DOB
-                    'Suburb/town': data.sub, 'State': data.st, 'Postcode': data.pc,
+                    // Date of Birth Variants
                     'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
+                    '2B - Date of birth day': d, '2B - Date of birth month': m, '2B - Date of birth year': y,
 
-                    // 8. DATE (Signature Section - Fixes "Missing Date" on all forms)
-                    'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY,
+                    // Address - Residential (The "r" fields from your audit)
+                    'Street Number Name RES': data.addr, 'Residential address': data.addr, 'residential address': data.addr,
+                    'Street Number and Name': data.addr, 'Street Number': data.addr, 'Street Name': data.addr,
+                    'Suburb/town RES': data.sub, 'Suburb/town': data.sub, 'step 2 - resid suburb/town': data.sub,
+                    'State RES': data.st, 'State': data.st, 'step 2 - resid state': data.st,
+                    'Postcode RES': data.pc, 'Postcode': data.pc, 'step 2 - resid postcode': data.pc,
+
+                    // Contact Variants
+                    'mobile1': data.mob, 'mobile': data.mob, 'Telephone mobile': data.mob, 'step 2 - Telephone mobile': data.mob,
+                    'Email address': data.eml, 'Email Address': data.eml, 'email address': data.eml, 'Step 2 - email address': data.eml,
+                    'Telephone home': data.mob, 'Telephone home1': data.mob, 'Telephone home2': data.mob, // Fallback home to mobile
+
+                    // TFN (Split variants)
+                    'TFN1': t.substring(0,3), 'TFN2': t.substring(3,6), 'TFN3': t.substring(6,9),
+                    '8039653-TFN1': t.substring(0,3), '8039653-TFN2': t.substring(3,6), '8039653-TFN3': t.substring(6,9),
+
+                    // Signature Dates (Step 6, Step 4, decDD etc)
+                    'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY, 'Declaration DD': curD, 'Declaration MM': curM, 'Declaration YY': curYY,
+                    'Step 6 - DD': curD, 'Step 6 - MM': curM, 'Step 6 - YYYY': curYYYY,
+                    'Step 4 - DD': curD, 'Step 4 - MM': curM, 'Step 4 - YYYY': curYYYY,
                     'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
-                    'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curYY,
+                    '3 Step 3 date': curD, '3 Step 3 date MM': curM, '3 Step 3 date YY': curYY,
+                    '4 Step 3 date': curD, '4 Step 3 date MM': curM, '4 Step 3 date YY': curYY,
                     'Join - Declaration DD': curD, 'Join - Declaration MM': curM, 'Join - Declaration YY': curYY,
-                    '8138576-Sign_Date_Day': curD, '8138576-Sign_Date_Month': curM, '8138576-Sign_Date_Year': curYYYY
+                    'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curYY,
+                    '8039778-Sign_Date_Day': curD, '8039778-Sign_Date_Month': curM, '8039778-Sign_Date_Year': curYYYY,
+                    '12 form 1 sign DD': curD, '12 form 1 sign MM': curM, '12 form 1 sign YY': curYY
                 };
 
+                // Loop through and fill
                 Object.keys(map).forEach(key => {
-                    try { form.getTextField(key).setText(map[key]); } catch(e) {}
+                    try {
+                        const field = form.getTextField(key);
+                        field.setText(map[key] || '');
+                    } catch (e) {
+                        // Field doesn't exist in this specific PDF, skip silently
+                    }
                 });
 
-                const saved = await pdfDoc.save();
-                zip.file(`Filled_${fileName}`, saved);
+                const pdfBytes = await pdfDoc.save();
+                zip.file(`Filled_${fileName}`, pdfBytes);
             }
-            const blob = await zip.generateAsync({type:"blob"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = "Cbus_Media_v2.4_Patch.zip";
-            a.click();
-            status.innerText = "✅ Patch Complete!";
-        } catch (e) { status.innerText = "❌ Error: " + e.message; }
+
+            status.innerText = "📦 Creating ZIP bundle...";
+            const content = await zip.generateAsync({type:"blob"});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = `Cbus_Assistant_Batch_${curYYYY}${curM}${curD}.zip`;
+            link.click();
+            status.innerText = "✅ Batch Complete!";
+
+        } catch (err) {
+            console.error(err);
+            status.innerText = "❌ Error: " + err.message;
+        }
     }
 </script>
 </body>
