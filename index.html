@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CBUS Document Assistant v1.0</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root { --cbus: #009354; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #f0f4f7; padding: 15px; margin: 0; }
+        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(240, 244, 247, 0.98); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .pin-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid var(--cbus); }
+        .pin-input { font-size: 24px; width: 120px; text-align: center; letter-spacing: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; margin: 15px 0; outline: none; }
+        .card { background: white; max-width: 650px; margin: 0 auto; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid var(--cbus); display: none; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .full { grid-column: span 2; }
+        label { display: block; font-size: 11px; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 10px; font-size: 16px; box-sizing: border-box; background: white; }
+        .form-selector { margin-top: 25px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd; }
+        .form-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .form-item input[type="checkbox"] { width: 26px; height: 26px; margin-right: 15px; accent-color: var(--cbus); }
+        .btn-run { width: 100%; padding: 20px; background: var(--cbus); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 25px; cursor: pointer; }
+        #status { text-align: center; margin-top: 20px; font-weight: bold; color: var(--cbus); font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div id="auth-overlay">
+    <div class="pin-box">
+        <h3 style="margin:0; color: var(--cbus);">Secure Access</h3>
+        <input type="password" id="pin-entry" class="pin-input" maxlength="4" placeholder="••••">
+        <br>
+        <button onclick="checkPin()" style="background: var(--cbus); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold;">Unlock</button>
+        <div id="pin-error" style="color: red; font-size: 12px; margin-top: 10px; display: none;">Incorrect PIN</div>
+    </div>
+</div>
+
+<div class="card" id="main-ui">
+    <h2 style="color:var(--cbus); text-align:center; margin-top:0;">🏗️ CBUS Document Assistant v1.0</h2>
+    
+    <div class="grid">
+        <div class="full"><label>Member Number</label><input type="text" id="m_no"></div>
+        <div><label>Given Name(s)</label><input type="text" id="gn"></div>
+        <div><label>Family Name</label><input type="text" id="fn"></div>
+        <div class="full"><label>Date of Birth</label><input type="date" id="dob"></div>
+        <div class="full"><label>Tax File Number</label><input type="tel" id="tfn"></div>
+        <div class="full"><label>Mobile Number</label><input type="tel" id="mob"></div>
+        <div class="full"><label>Email Address</label><input type="email" id="eml"></div>
+        <div class="full"><label>Street Address</label><input type="text" id="addr"></div>
+        <div><label>Suburb</label><input type="text" id="sub"></div>
+        <div><label>State</label>
+            <select id="st">
+                <option value="QLD">QLD</option><option value="NSW">NSW</option><option value="VIC">VIC</option>
+                <option value="WA">WA</option><option value="SA">SA</option><option value="TAS">TAS</option>
+                <option value="ACT">ACT</option><option value="NT">NT</option>
+            </select>
+        </div>
+        <div class="full"><label>Postcode</label><input type="tel" id="pc"></div>
+    </div>
+
+    <div class="form-selector">
+        <label>Select Required Forms:</label>
+        <div id="formList">
+            <label class="form-item"><input type="checkbox" value="Change-Details-Form.pdf"> Change Details</label>
+            <label class="form-item"><input type="checkbox" value="Change-Income-Stream-Details-Form.pdf"> Income Stream Details</label>
+            <label class="form-item"><input type="checkbox" value="super-withdrawal-form.pdf"> Super Withdrawal</label>
+            <label class="form-item"><input type="checkbox" value="Change-Occupation-Form.pdf"> Change Occupation</label>
+            <label class="form-item"><input type="checkbox" value="Combine-Form.pdf"> Combine Super</label>
+            <label class="form-item"><input type="checkbox" value="Binding-Death-Benefit-Nomination-Form.pdf"> Binding Death Nom</label>
+            <label class="form-item"><input type="checkbox" value="App-Increase-Cover-Living-Events.pdf"> Increase Cover (Living Events)</label>
+            <label class="form-item"><input type="checkbox" value="Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> Insurance Transfer</label>
+            <label class="form-item"><input type="checkbox" value="Change-Insurance-Form-Industry-Super.pdf"> Change Insurance (Industry)</label>
+            <label class="form-item"><input type="checkbox" value="Rollover-Form.pdf"> Rollover Form</label>
+            <label class="form-item"><input type="checkbox" value="join-industry-form.pdf"> Join Industry Form</label>
+        </div>
+    </div>
+
+    <button class="btn-run" onclick="runBatch()">🚀 Generate Bundle</button>
+    <div id="status"></div>
+</div>
+
+<script>
+    function checkPin() {
+        if (document.getElementById('pin-entry').value === "1234") {
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('main-ui').style.display = 'block';
+        } else {
+            document.getElementById('pin-error').style.display = 'block';
+        }
+    }
+
+    async function runBatch() {
+        const selected = Array.from(document.querySelectorAll('#formList input:checked'));
+        if (selected.length === 0) return alert("Select forms.");
+        const status = document.getElementById('status');
+        const zip = new JSZip();
+
+        const gn = document.getElementById('gn').value.trim();
+        const fn = document.getElementById('fn').value.trim();
+        const fullName = `${gn} ${fn}`.trim() || "Member";
+        
+        const dobVal = document.getElementById('dob').value;
+        const [y, m, d] = dobVal ? dobVal.split('-') : ['', '', ''];
+        const now = new Date();
+        const curD = String(now.getDate()).padStart(2, '0');
+        const curM = String(now.getMonth() + 1).padStart(2, '0');
+        const curYYYY = String(now.getFullYear());
+        const curYY = curYYYY.substring(2);
+
+        const data = {
+            m: document.getElementById('m_no').value,
+            gn: gn, fn: fn,
+            mob: document.getElementById('mob').value,
+            eml: document.getElementById('eml').value,
+            addr: document.getElementById('addr').value,
+            sub: document.getElementById('sub').value,
+            st: document.getElementById('st').value,
+            pc: document.getElementById('pc').value,
+            tfn: document.getElementById('tfn').value.replace(/\s/g, '')
+        };
+
+        try {
+            for (const item of selected) {
+                const fileName = item.value;
+                status.innerText = `Auto-filling: ${fileName}...`;
+                const resp = await fetch(`./forms/CBUS/${fileName}?t=${Date.now()}`);
+                const pdfDoc = await PDFLib.PDFDocument.load(await resp.arrayBuffer());
+                const form = pdfDoc.getForm();
+
+                const forensicMap = {
+                    // Member Number Variations
+                    'Cbus member number': data.m, 'Member number': data.m, 'Cbus Super member number': data.m,
+                    '8039653-member_number': data.m, '8138573-member_number': data.m,
+                    
+                    // Identity & Address
+                    'Given names': data.gn, 'Given name(s)': data.gn, 'Family name': data.fn,
+                    'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
+                    'Residential address': data.addr, 'Residential address (compulsory)': data.addr, 'Street Number Name RES': data.addr,
+                    'Suburb/town': data.sub, 'Suburb/town RES': data.sub, 'step 2 - resid suburb/town': data.sub,
+                    'State': data.st, 'State RES': data.st, 'Postcode': data.pc, 'Postcode RES': data.pc,
+                    'Mobile': data.mob, 'mobile': data.mob, 'Telephone mobile': data.mob, 'step 2 - Telephone mobile': data.mob,
+                    'Email address': data.eml, 'Email Address': data.eml, 'Step 2 - email address': data.eml,
+                    
+                    // Step-Specific Date Forensics (Fixing your 2024/2025 missing years)
+                    'Step 4 date': curD, 'Step 4 date MM': curM, 'Step 4 date YY': curYY, 'Step 4 date YYYY': curYYYY,
+                    'Step 6 date': curD, 'Step 6 date MM': curM, 'Step 6 date YY': curYY, 'Step 6 date YYYY': curYYYY,
+                    'Step 8 date': curD, 'Step 8 date MM': curM, 'Step 8 date YY': curYY, 'Step 8 date YYYY': curYYYY,
+                    'Step 10 date': curD, 'Step 10 date MM': curM, 'Step 10 date YY': curYY, 'Step 10 date YYYY': curYYYY,
+                    'Step 5 date': curD, 'Step 5 date MM': curM, 'Step 5 date YY': curYY, 'Step 5 date YYYY': curYYYY,
+                    'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY,
+                    
+                    // Specific TFN Mapping
+                    'TFN1': data.tfn.substring(0,3), 'TFN2': data.tfn.substring(3,6), 'TFN3': data.tfn.substring(6,9)
+                };
+
+                Object.entries(forensicMap).forEach(([k, v]) => {
+                    try { form.getTextField(k).setText(v); } catch(e) {}
+                });
+
+                zip.file(`${fullName} - ${fileName}`, await pdfDoc.save());
+            }
+
+            const blob = await zip.generateAsync({type:"blob"});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${fullName}.zip`;
+            a.click();
+            status.innerText = "✅ Download Complete";
+        } catch (err) { status.innerText = `❌ Error: ${err.message}`; }
+    }
+</script>
+</body>
+</html>
