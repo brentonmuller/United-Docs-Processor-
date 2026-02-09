@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CBUS Document Assistant v1.0</title>
+    <title>CBUS Document Assistant February 2026</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root { --cbus: #009354; }
         body { font-family: -apple-system, system-ui, sans-serif; background: #f0f4f7; padding: 15px; margin: 0; }
+        
+        /* PIN Security Overlay */
         #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(240, 244, 247, 0.98); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .pin-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid var(--cbus); }
         .pin-input { font-size: 24px; width: 120px; text-align: center; letter-spacing: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; margin: 15px 0; outline: none; }
+        
+        /* Main UI */
         .card { background: white; max-width: 650px; margin: 0 auto; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid var(--cbus); display: none; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .full { grid-column: span 2; }
@@ -28,16 +32,17 @@
 
 <div id="auth-overlay">
     <div class="pin-box">
-        <h3 style="margin:0; color: var(--cbus);">Secure Access</h3>
+        <h3 style="margin-top:0; color: var(--cbus);">Secure Access</h3>
+        <p style="font-size: 13px; color: #666;">Enter Admin PIN to continue</p>
         <input type="password" id="pin-entry" class="pin-input" maxlength="4" placeholder="••••">
         <br>
-        <button onclick="checkPin()" style="background: var(--cbus); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold;">Unlock</button>
+        <button onclick="checkPin()" style="background: var(--cbus); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-weight: bold;">Unlock Assistant</button>
         <div id="pin-error" style="color: red; font-size: 12px; margin-top: 10px; display: none;">Incorrect PIN</div>
     </div>
 </div>
 
 <div class="card" id="main-ui">
-    <h2 style="color:var(--cbus); text-align:center; margin-top:0;">🏗️ CBUS Document Assistant v1.0</h2>
+    <h2 style="color:var(--cbus); text-align:center; margin-top:0;">🏗️ CBUS Document Assistant February 2026</h2>
     
     <div class="grid">
         <div class="full"><label>Member Number</label><input type="text" id="m_no"></div>
@@ -51,9 +56,14 @@
         <div><label>Suburb</label><input type="text" id="sub"></div>
         <div><label>State</label>
             <select id="st">
-                <option value="QLD">QLD</option><option value="NSW">NSW</option><option value="VIC">VIC</option>
-                <option value="WA">WA</option><option value="SA">SA</option><option value="TAS">TAS</option>
-                <option value="ACT">ACT</option><option value="NT">NT</option>
+                <option value="QLD">QLD</option>
+                <option value="NSW">NSW</option>
+                <option value="VIC">VIC</option>
+                <option value="WA">WA</option>
+                <option value="SA">SA</option>
+                <option value="TAS">TAS</option>
+                <option value="ACT">ACT</option>
+                <option value="NT">NT</option>
             </select>
         </div>
         <div class="full"><label>Postcode</label><input type="tel" id="pc"></div>
@@ -82,26 +92,31 @@
 
 <script>
     function checkPin() {
-        if (document.getElementById('pin-entry').value === "1234") {
+        const pin = document.getElementById('pin-entry').value;
+        const correctPin = "1234";
+        if (pin === correctPin) {
             document.getElementById('auth-overlay').style.display = 'none';
             document.getElementById('main-ui').style.display = 'block';
         } else {
             document.getElementById('pin-error').style.display = 'block';
+            document.getElementById('pin-entry').value = '';
         }
     }
 
     async function runBatch() {
         const selected = Array.from(document.querySelectorAll('#formList input:checked'));
-        if (selected.length === 0) return alert("Select forms.");
+        if (selected.length === 0) return alert("Select at least one form.");
+
         const status = document.getElementById('status');
         const zip = new JSZip();
 
         const gn = document.getElementById('gn').value.trim();
         const fn = document.getElementById('fn').value.trim();
-        const fullName = `${gn} ${fn}`.trim() || "Member";
-        
+        const fullName = `${gn} ${fn}`.trim() || "Cbus_Member";
+
         const dobVal = document.getElementById('dob').value;
         const [y, m, d] = dobVal ? dobVal.split('-') : ['', '', ''];
+        const tfn = document.getElementById('tfn').value.replace(/\s/g, '');
         const now = new Date();
         const curD = String(now.getDate()).padStart(2, '0');
         const curM = String(now.getMonth() + 1).padStart(2, '0');
@@ -110,64 +125,66 @@
 
         const data = {
             m: document.getElementById('m_no').value,
-            gn: gn, fn: fn,
+            gn: gn,
+            fn: fn,
             mob: document.getElementById('mob').value,
             eml: document.getElementById('eml').value,
             addr: document.getElementById('addr').value,
             sub: document.getElementById('sub').value,
             st: document.getElementById('st').value,
-            pc: document.getElementById('pc').value,
-            tfn: document.getElementById('tfn').value.replace(/\s/g, '')
+            pc: document.getElementById('pc').value
         };
 
         try {
             for (const item of selected) {
                 const fileName = item.value;
-                status.innerText = `Auto-filling: ${fileName}...`;
-                const resp = await fetch(`./forms/CBUS/${fileName}?t=${Date.now()}`);
-                const pdfDoc = await PDFLib.PDFDocument.load(await resp.arrayBuffer());
+                status.innerText = `Processing: ${fileName}...`;
+                
+                const response = await fetch(`./forms/CBUS/${fileName}?t=${Date.now()}`);
+                if (!response.ok) throw new Error(`File ${fileName} not found.`);
+
+                const pdfDoc = await PDFLib.PDFDocument.load(await response.arrayBuffer());
                 const form = pdfDoc.getForm();
 
-                const forensicMap = {
-                    // Member Number Variations
+                const masterMap = {
                     'Cbus member number': data.m, 'Member number': data.m, 'Cbus Super member number': data.m,
                     '8039653-member_number': data.m, '8138573-member_number': data.m,
-                    
-                    // Identity & Address
-                    'Given names': data.gn, 'Given name(s)': data.gn, 'Family name': data.fn,
+                    'Given names': data.gn, 'Given name(s)': data.gn, 'First names': data.gn,
+                    'Family name': data.fn,
                     'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
                     'Residential address': data.addr, 'Residential address (compulsory)': data.addr, 'Street Number Name RES': data.addr,
+                    'Street Number and Name': data.addr, 'Street Name': data.addr, 'Street Number': data.addr,
                     'Suburb/town': data.sub, 'Suburb/town RES': data.sub, 'step 2 - resid suburb/town': data.sub,
-                    'State': data.st, 'State RES': data.st, 'Postcode': data.pc, 'Postcode RES': data.pc,
-                    'Mobile': data.mob, 'mobile': data.mob, 'Telephone mobile': data.mob, 'step 2 - Telephone mobile': data.mob,
-                    'Email address': data.eml, 'Email Address': data.eml, 'Step 2 - email address': data.eml,
-                    
-                    // Step-Specific Date Forensics (Fixing your 2024/2025 missing years)
-                    'Step 4 date': curD, 'Step 4 date MM': curM, 'Step 4 date YY': curYY, 'Step 4 date YYYY': curYYYY,
-                    'Step 6 date': curD, 'Step 6 date MM': curM, 'Step 6 date YY': curYY, 'Step 6 date YYYY': curYYYY,
-                    'Step 8 date': curD, 'Step 8 date MM': curM, 'Step 8 date YY': curYY, 'Step 8 date YYYY': curYYYY,
-                    'Step 10 date': curD, 'Step 10 date MM': curM, 'Step 10 date YY': curYY, 'Step 10 date YYYY': curYYYY,
-                    'Step 5 date': curD, 'Step 5 date MM': curM, 'Step 5 date YY': curYY, 'Step 5 date YYYY': curYYYY,
+                    'Postcode': data.pc, 'Postcode RES': data.pc, 'step 2 - resid postcode': data.pc,
+                    'State': data.st, 'State RES': data.st,
+                    'Mobile': data.mob, 'mobile': data.mob, 'mobile1': data.mob, 'Telephone mobile': data.mob, 'step 2 - Telephone mobile': data.mob,
+                    'Email address': data.eml, 'Email Address': data.eml, 'email address': data.eml, 'Step 2 - email address': data.eml,
+                    'Tax file number (TFN)': tfn, 'TFN1': tfn.substring(0,3), 'TFN2': tfn.substring(3,6), 'TFN3': tfn.substring(6,9),
                     'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY,
-                    
-                    // Specific TFN Mapping
-                    'TFN1': data.tfn.substring(0,3), 'TFN2': data.tfn.substring(3,6), 'TFN3': data.tfn.substring(6,9)
+                    'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
+                    'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curYY
                 };
 
-                Object.entries(forensicMap).forEach(([k, v]) => {
+                Object.entries(masterMap).forEach(([k, v]) => {
                     try { form.getTextField(k).setText(v); } catch(e) {}
                 });
 
-                zip.file(`${fullName} - ${fileName}`, await pdfDoc.save());
+                const newFileName = `${fullName} - ${fileName}`;
+                zip.file(newFileName, await pdfDoc.save());
             }
 
+            status.innerText = "📦 Creating Pack...";
             const blob = await zip.generateAsync({type:"blob"});
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
+            a.href = url; 
             a.download = `${fullName}.zip`;
             a.click();
-            status.innerText = "✅ Download Complete";
-        } catch (err) { status.innerText = `❌ Error: ${err.message}`; }
+            status.innerText = "✅ Done! Pack Downloaded.";
+        } catch (err) {
+            status.style.color = "red";
+            status.innerText = `❌ ${err.message}`;
+        }
     }
 </script>
 </body>
