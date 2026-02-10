@@ -33,7 +33,7 @@
     <div class="pin-box">
         <h3 style="margin-top:0; color: var(--cbus);">Secure Access</h3>
         <p style="font-size: 13px; color: #666;">Enter Admin PIN to continue</p>
-        <input type="password" id="pin-entry" class="pin-input" maxlength="4" placeholder="••••">
+        <input type="password" id="pin-entry" class="pin-input" maxlength="8" placeholder="••••••••">
         <br>
         <button onclick="checkPin()" style="background: var(--cbus); color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-weight: bold;">Unlock Assistant</button>
         <div id="pin-error" style="color: red; font-size: 12px; margin-top: 10px; display: none;">Incorrect PIN</div>
@@ -92,7 +92,8 @@
 <script>
     function checkPin() {
         const pin = document.getElementById('pin-entry').value;
-        const correctPin = "1234";
+        // Updated correctPin value to 01071984
+        const correctPin = "01071984";
         if (pin === correctPin) {
             document.getElementById('auth-overlay').style.display = 'none';
             document.getElementById('main-ui').style.display = 'block';
