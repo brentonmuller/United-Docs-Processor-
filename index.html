@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CBUS Document Assistant February 2026</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root { --cbus: #009354; }
         body { font-family: -apple-system, system-ui, sans-serif; background: #f0f4f7; padding: 15px; margin: 0; }
@@ -86,7 +85,7 @@
         </div>
     </div>
 
-    <button class="btn-run" onclick="runBatch()">🚀 Generate Bundle</button>
+    <button class="btn-run" onclick="runBatch()">🚀 Generate Forms</button>
     <div id="status"></div>
 </div>
 
@@ -108,11 +107,9 @@
         if (selected.length === 0) return alert("Select at least one form.");
 
         const status = document.getElementById('status');
-        const zip = new JSZip();
-
         const gn = document.getElementById('gn').value.trim();
         const fn = document.getElementById('fn').value.trim();
-        const fullName = `${gn} ${fn}`.trim() || "Cbus_Member";
+        const fullNamePrefix = `${gn} ${fn}`.trim() || "Cbus_Member";
 
         const dobVal = document.getElementById('dob').value;
         const [y, m, d] = dobVal ? dobVal.split('-') : ['', '', ''];
@@ -169,18 +166,22 @@
                     try { form.getTextField(k).setText(v); } catch(e) {}
                 });
 
-                const newFileName = `${fullName} - ${fileName}`;
-                zip.file(newFileName, await pdfDoc.save());
+                const finalName = `${fullNamePrefix} ${fileName}`;
+                const pdfBytes = await pdfDoc.save();
+                
+                // Initiate individual download
+                const blob = new Blob([pdfBytes], { type: "application/pdf" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = finalName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             }
 
-            status.innerText = "📦 Creating Pack...";
-            const blob = await zip.generateAsync({type:"blob"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; 
-            a.download = `${fullName}.zip`;
-            a.click();
-            status.innerText = "✅ Done! Pack Downloaded.";
+            status.innerText = "✅ Files generated successfully!";
         } catch (err) {
             status.style.color = "red";
             status.innerText = `❌ ${err.message}`;
@@ -188,5 +189,4 @@
     }
 </script>
 </body>
-
 </html>
