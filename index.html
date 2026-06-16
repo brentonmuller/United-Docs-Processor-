@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Document Assistant (GitHub Cloud Edition)</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <style>
+        :root { --cbus: #009354; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #f0f4f7; padding: 15px; margin: 0; }
+        .card { background: white; max-width: 650px; margin: 20px auto; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid var(--cbus); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .full { grid-column: span 2; }
+        label { display: block; font-size: 11px; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 10px; font-size: 16px; box-sizing: border-box; background: white; }
+        .form-selector { margin-top: 25px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd; }
+        .category-title { font-size: 12px; font-weight: 800; color: #333; margin: 15px 0 5px 0; padding-bottom: 3px; border-bottom: 2px solid var(--cbus); text-transform: uppercase; letter-spacing: 0.5px; }
+        .category-title:first-of-type { margin-top: 5px; }
+        .form-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; cursor: pointer; }
+        .form-item input[type="checkbox"] { width: 26px; height: 26px; margin-right: 15px; accent-color: var(--cbus); cursor: pointer; }
+        .btn-run { width: 100%; padding: 20px; background: var(--cbus); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 25px; cursor: pointer; }
+        .btn-run:hover { background: #007a45; }
+        #status { text-align: center; margin-top: 20px; font-weight: bold; color: var(--cbus); font-size: 14px; min-height: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2 style="color:var(--cbus); text-align:center; margin-top:0;">🏗️ Document Assistant</h2>
+    
+    <div class="grid">
+        <div class="full"><label>Member Number</label><input type="text" id="m_no"></div>
+        <div><label>Given Name(s)</label><input type="text" id="gn"></div>
+        <div><label>Family Name</label><input type="text" id="fn"></div>
+        <div class="full"><label>Date of Birth</label><input type="date" id="dob"></div>
+        <div class="full"><label>Tax File Number</label><input type="tel" id="tfn"></div>
+        <div class="full"><label>Mobile Number</label><input type="tel" id="mob"></div>
+        <div class="full"><label>Email Address</label><input type="email" id="eml"></div>
+        <div class="full"><label>Street Address</label><input type="text" id="addr"></div>
+        <div><label>Suburb</label><input type="text" id="sub"></div>
+        <div><label>State</label>
+            <select id="st">
+                <option value="QLD">QLD</option>
+                <option value="NSW">NSW</option>
+                <option value="VIC">VIC</option>
+                <option value="WA">WA</option>
+                <option value="SA">SA</option>
+                <option value="TAS">TAS</option>
+                <option value="ACT">ACT</option>
+                <option value="NT">NT</option>
+            </select>
+        </div>
+        <div class="full"><label>Postcode</label><input type="tel" id="pc"></div>
+    </div>
+
+    <div class="form-selector">
+        <label style="font-size: 12px; color: #444; font-weight: bold;">Select Forms to Auto-Complete Simultaneously:</label>
+        <div id="formList">
+            
+            <div class="category-title">Accumulation Super Forms</div>
+            <label class="form-item"><input type="checkbox" value="Change-Details-Form.pdf"> Change of Details</label>
+            <label class="form-item"><input type="checkbox" value="super-withdrawal-form.pdf"> Super Withdrawal</label>
+            <label class="form-item"><input type="checkbox" value="Change-Occupation-Form.pdf"> Change Occupation Category</label>
+            <label class="form-item"><input type="checkbox" value="Combine-Form.pdf"> Combine Your Super</label>
+            <label class="form-item"><input type="checkbox" value="Binding-Death-Benefit-Nomination-Form.pdf"> Binding Death Nomination</label>
+            <label class="form-item"><input type="checkbox" value="App-Increase-Cover-Living-Events.pdf"> Life Event Insurance Change</label>
+            <label class="form-item"><input type="checkbox" value="Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> Transfer Existing Insurance</label>
+            <label class="form-item"><input type="checkbox" value="Change-Insurance-Form-Industry-Super.pdf"> Change my Insurance</label>
+            <label class="form-item"><input type="checkbox" value="Rollover-Form.pdf"> Rollover Your Super</label>
+            <label class="form-item"><input type="checkbox" value="join-industry-form.pdf"> Join Industry Super</label>
+            <label class="form-item"><input type="checkbox" value="Apply-for-insurance-form.pdf"> Apply for Insurance</label>
+            <label class="form-item"><input type="checkbox" value="Cancel-or-reduce-insurance-form.pdf"> Cancel or Reduce Insurance</label>
+            <label class="form-item"><input type="checkbox" value="Direct-debit-request-form.pdf"> Direct Debit Request</label>
+            <label class="form-item"><input type="checkbox" value="Make-a-contribution-form.pdf"> Make a Contribution</label>
+            <label class="form-item"><input type="checkbox" value="Nomination-of-beneficiaries-form.pdf"> Non-Binding Nomination</label>
+            <label class="form-item"><input type="checkbox" value="Split-your-super-contributions-form.pdf"> Super Contribution Splitting</label>
+            <label class="form-item"><input type="checkbox" value="Super-co-contribution-application-form.pdf"> Government Co-Contribution</label>
+
+            <div class="category-title">Retired / TTR Member Forms</div>
+            <label class="form-item"><input type="checkbox" value="Change-Income-Stream-Details-Form.pdf"> Change Your Income Stream Details</label>
+            <label class="form-item"><input type="checkbox" value="Income-stream-withdrawal-or-rollover-form.pdf"> Income Stream Withdrawal / Rollover</label>
+            <label class="form-item"><input type="checkbox" value="Request-to-transfer-form.pdf"> Request to Transfer (Start Income Stream)</label>
+            <label class="form-item"><input type="checkbox" value="Renew-your-binding-nomination.pdf"> Renew Binding Nomination</label>
+            <label class="form-item"><input type="checkbox" value="Income-Stream-Switching-Form.pdf"> Income Stream Investment Switching</label>
+            <label class="form-item"><input type="checkbox" value="Retirement-Scheme-Investment-choice.pdf"> Retirement Scheme Investment Choice</label>
+            <label class="form-item"><input type="checkbox" value="Retirement-Scheme-or-Defined-Benefit-Scheme-change-my-bank-account-form.pdf"> Change Pension Bank Account</label>
+            <label class="form-item"><input type="checkbox" value="Retirement-Scheme-payment-instruction-form.pdf"> Retirement Scheme Payment Instruction</label>
+        </div>
+    </div>
+
+    <button class="btn-run" onclick="runBatchProcessing()">🚀 Generate All Selected Forms</button>
+    <div id="status">Ready.</div>
+</div>
+
+<script>
+    // ==========================================
+    // CONFIGURATION: SET YOUR GITHUB DETAILS HERE
+    // ==========================================
+    const GITHUB_USERNAME = "YOUR_GITHUB_USERNAME_HERE";
+    const REPO_NAME = "YOUR_REPO_NAME_HERE";
+    
+    // Automatically routes directly to your repository's 'forms' folder
+    const BASE_DATA_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${REPO_NAME}/main/forms/`;
+
+    async function runBatchProcessing() {
+        const selected = Array.from(document.querySelectorAll('#formList input:checked'));
+        if (selected.length === 0) return alert("Please select at least one form to generate.");
+
+        const status = document.getElementById('status');
+        status.style.color = "var(--cbus)";
+        
+        // Extract field values
+        const gn = document.getElementById('gn').value.trim();
+        const fn = document.getElementById('fn').value.trim();
+        const fullNamePrefix = `${gn} ${fn}`.trim() || "Member_Form";
+
+        const dobVal = document.getElementById('dob').value;
+        const [y, m, d] = dobVal ? dobVal.split('-') : ['', '', ''];
+        const tfn = document.getElementById('tfn').value.replace(/\s/g, '');
+        
+        const now = new Date();
+        const curD = String(now.getDate()).padStart(2, '0');
+        const curM = String(now.getMonth() + 1).padStart(2, '0');
+        const curYYYY = String(now.getFullYear());
+        const curYY = curYYYY.substring(2);
+
+        const data = {
+            m: document.getElementById('m_no').value, gn, fn,
+            mob: document.getElementById('mob').value, eml: document.getElementById('eml').value,
+            addr: document.getElementById('addr').value, sub: document.getElementById('sub').value,
+            st: document.getElementById('st').value, pc: document.getElementById('pc').value
+        };
+
+        const masterMap = {
+            'Cbus member number': data.m, 'Member number': data.m, 'Cbus Super member number': data.m,
+            '8039653-member_number': data.m, '8138573-member_number': data.m,
+            'Given names': data.gn, 'Given name(s)': data.gn, 'First names': data.gn, 'Family name': data.fn,
+            'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
+            'Residential address': data.addr, 'Residential address (compulsory)': data.addr, 'Street Number Name RES': data.addr,
+            'Street Number and Name': data.addr, 'Street Name': data.addr, 'Street Number': data.addr,
+            'Suburb/town': data.sub, 'Suburb/town RES': data.sub, 'step 2 - resid suburb/town': data.sub,
+            'Postcode': data.pc, 'Postcode RES': data.pc, 'step 2 - resid postcode': data.pc, 'State': data.st, 'State RES': data.st,
+            'Mobile': data.mob, 'mobile': data.mob, 'mobile1': data.mob, 'Telephone mobile': data.mob, 'step 2 - Telephone mobile': data.mob,
+            'Email address': data.eml, 'Email Address': data.eml, 'email address': data.eml, 'Step 2 - email address': data.eml,
+            'Tax file number (TFN)': tfn, 'TFN1': tfn.substring(0,3), 'TFN2': tfn.substring(3,6), 'TFN3': tfn.substring(6,9),
+            'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY, 'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
+            'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curYY
+        };
+
+        // Loops through each checked document asynchronously
+        for (const item of selected) {
+            const formFileName = item.value;
+            status.innerText = `📡 Downloading clean template: ${formFileName}...`;
+
+            try {
+                // Pulls down the actual native PDF binary file from your GitHub repository storage
+                const pdfResponse = await fetch(`${BASE_DATA_URL}${formFileName}`);
+                if (!pdfResponse.ok) throw new Error("Could not download target PDF template from your storage directory.");
+                
+                const arrayBuffer = await pdfResponse.arrayBuffer();
+
+                status.innerText = `⚙️ Auto-completing fields for: ${formFileName}...`;
+
+                const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                const form = pdfDoc.getForm();
+
+                // Assign details to matching interactive form blocks natively
+                Object.entries(masterMap).forEach(([fieldKey, textValue]) => {
+                    try { form.getTextField(fieldKey).setText(textValue); } catch(e) {}
+                });
+
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: "application/pdf" });
+                const localUrl = URL.createObjectURL(blob);
+
+                // Instantly triggers a clean system save download command for this document
+                const a = document.createElement('a');
+                a.href = localUrl;
+                a.download = `${fullNamePrefix}_${formFileName}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(localUrl);
+
+            } catch (err) {
+                status.style.color = "red";
+                status.innerText = `❌ Error processing [${formFileName}]: ${err.message}`;
+                return;
+            }
+        }
+
+        status.style.color = "var(--cbus)";
+        status.innerText = "✅ Batch process complete! Check your computer's Downloads folder.";
+    }
+</script>
+</body>
+</html>
