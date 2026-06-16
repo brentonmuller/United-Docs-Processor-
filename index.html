@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Document Assistant (GitHub Cloud Edition)</title>
+    <title>Document Assistant (United Docs Processor)</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
         :root { --cbus: #009354; }
@@ -56,7 +56,6 @@
     <div class="form-selector">
         <label style="font-size: 12px; color: #444; font-weight: bold;">Select Forms to Auto-Complete Simultaneously:</label>
         <div id="formList">
-            
             <div class="category-title">Accumulation Super Forms</div>
             <label class="form-item"><input type="checkbox" value="Change-Details-Form.pdf"> Change of Details</label>
             <label class="form-item"><input type="checkbox" value="super-withdrawal-form.pdf"> Super Withdrawal</label>
@@ -93,78 +92,82 @@
 </div>
 
 <script>
-    // ==========================================
-    // CONFIGURATION: SET YOUR GITHUB DETAILS HERE
-    // ==========================================
     const GITHUB_USERNAME = "brentonmuller";
     const REPO_NAME = "united-docs-processor-";
-    
-    // Automatically routes directly to your repository's 'forms' folder
-    const BASE_DATA_URL = `https://raw.githubusercontent.com/${brentonmuller}/${united-docs-processor-}/forms/`;
+    const BASE_DATA_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${REPO_NAME}/main/forms/`;
 
     async function runBatchProcessing() {
-        const selected = Array.from(document.querySelectorAll('#formList input:checked'));
-        if (selected.length === 0) return alert("Please select at least one form to generate.");
-
         const status = document.getElementById('status');
         status.style.color = "var(--cbus)";
-        
-        // Extract field values
-        const gn = document.getElementById('gn').value.trim();
-        const fn = document.getElementById('fn').value.trim();
-        const fullNamePrefix = `${gn} ${fn}`.trim() || "Member_Form";
+        status.innerText = "🔄 Starting engine...";
 
-        const dobVal = document.getElementById('dob').value;
-        const [y, m, d] = dobVal ? dobVal.split('-') : ['', '', ''];
-        const tfn = document.getElementById('tfn').value.replace(/\s/g, '');
-        
-        const now = new Date();
-        const curD = String(now.getDate()).padStart(2, '0');
-        const curM = String(now.getMonth() + 1).padStart(2, '0');
-        const curYYYY = String(now.getFullYear());
-        const curYY = curYYYY.substring(2);
+        try {
+            const selected = Array.from(document.querySelectorAll('#formList input:checked'));
+            if (selected.length === 0) {
+                status.innerText = "Ready.";
+                return alert("Please select at least one form to generate.");
+            }
 
-        const data = {
-            m: document.getElementById('m_no').value, gn, fn,
-            mob: document.getElementById('mob').value, eml: document.getElementById('eml').value,
-            addr: document.getElementById('addr').value, sub: document.getElementById('sub').value,
-            st: document.getElementById('st').value, pc: document.getElementById('pc').value
-        };
+            const gn = (document.getElementById('gn').value || "").trim();
+            const fn = (document.getElementById('fn').value || "").trim();
+            const fullNamePrefix = `${gn} ${fn}`.trim() || "Member_Form";
 
-        const masterMap = {
-            'Cbus member number': data.m, 'Member number': data.m, 'Cbus Super member number': data.m,
-            '8039653-member_number': data.m, '8138573-member_number': data.m,
-            'Given names': data.gn, 'Given name(s)': data.gn, 'First names': data.gn, 'Family name': data.fn,
-            'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
-            'Residential address': data.addr, 'Residential address (compulsory)': data.addr, 'Street Number Name RES': data.addr,
-            'Street Number and Name': data.addr, 'Street Name': data.addr, 'Street Number': data.addr,
-            'Suburb/town': data.sub, 'Suburb/town RES': data.sub, 'step 2 - resid suburb/town': data.sub,
-            'Postcode': data.pc, 'Postcode RES': data.pc, 'step 2 - resid postcode': data.pc, 'State': data.st, 'State RES': data.st,
-            'Mobile': data.mob, 'mobile': data.mob, 'mobile1': data.mob, 'Telephone mobile': data.mob, 'step 2 - Telephone mobile': data.mob,
-            'Email address': data.eml, 'Email Address': data.eml, 'email address': data.eml, 'Step 2 - email address': data.eml,
-            'Tax file number (TFN)': tfn, 'TFN1': tfn.substring(0,3), 'TFN2': tfn.substring(3,6), 'TFN3': tfn.substring(6,9),
-            'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY, 'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
-            'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curYY
-        };
+            const dobVal = document.getElementById('dob').value || "";
+            let y = "", m = "", d = "";
+            if (dobVal) {
+                const parts = dobVal.includes('-') ? dobVal.split('-') : dobVal.split('/');
+                if (parts.length === 3) {
+                    if (parts[0].length === 4) { y = parts[0]; m = parts[1]; d = parts[2]; } 
+                    else { d = parts[0]; m = parts[1]; y = parts[2]; }
+                }
+            }
 
-        // Loops through each checked document asynchronously
-        for (const item of selected) {
-            const formFileName = item.value;
-            status.innerText = `📡 Downloading clean template: ${formFileName}...`;
+            const tfn = (document.getElementById('tfn').value || "").replace(/\s/g, '');
+            
+            const now = new Date();
+            const curD = String(now.getDate()).padStart(2, '0');
+            const curM = String(now.getMonth() + 1).padStart(2, '0');
+            const curYYYY = String(now.getFullYear());
+            const curYY = curYYYY.substring(2);
 
-            try {
-                // Pulls down the actual native PDF binary file from your GitHub repository storage
+            const data = {
+                m: document.getElementById('m_no').value || "", gn, fn,
+                mob: document.getElementById('mob').value || "", eml: document.getElementById('eml').value || "",
+                addr: document.getElementById('addr').value || "", sub: document.getElementById('sub').value || "",
+                st: document.getElementById('st').value || "QLD", pc: document.getElementById('pc').value || ""
+            };
+
+            const masterMap = {
+                'Cbus member number': data.m, 'Member number': data.m, 'Cbus Super member number': data.m,
+                '8039653-member_number': data.m, '8138573-member_number': data.m,
+                'Given names': data.gn, 'Given name(s)': data.gn, 'First names': data.gn, 'Family name': data.fn,
+                'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
+                'Residential address': data.addr, 'Residential address (compulsory)': data.addr, 'Street Number Name RES': data.addr,
+                'Street Number and Name': data.addr, 'Street Name': data.addr, 'Street Number': data.addr,
+                'Suburb/town': data.sub, 'Suburb/town RES': data.sub, 'step 2 - resid suburb/town': data.sub,
+                'Postcode': data.pc, 'Postcode RES': data.pc, 'step 2 - resid postcode': data.pc, 'State': data.st, 'State RES': data.st,
+                'Mobile': data.mob, 'mobile': data.mob, 'mobile1': data.mob, 'Telephone mobile': data.mob, 'step 2 - Telephone mobile': data.mob,
+                'Email address': data.eml, 'Email Address': data.eml, 'email address': data.eml, 'Step 2 - email address': data.eml,
+                'Tax file number (TFN)': tfn, 'TFN1': tfn.substring(0,3), 'TFN2': tfn.substring(3,6), 'TFN3': tfn.substring(6,9),
+                'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY, 'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
+                'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curYY
+            };
+
+            for (const item of selected) {
+                const formFileName = item.value;
+                status.innerText = `📡 Downloading clean template: ${formFileName}...`;
+
                 const pdfResponse = await fetch(`${BASE_DATA_URL}${formFileName}`);
-                if (!pdfResponse.ok) throw new Error("Could not download target PDF template from your storage directory.");
+                if (!pdfResponse.ok) {
+                    throw new Error(`Could not download [${formFileName}] from GitHub folder.`);
+                }
                 
                 const arrayBuffer = await pdfResponse.arrayBuffer();
-
                 status.innerText = `⚙️ Auto-completing fields for: ${formFileName}...`;
 
                 const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
                 const form = pdfDoc.getForm();
 
-                // Assign details to matching interactive form blocks natively
                 Object.entries(masterMap).forEach(([fieldKey, textValue]) => {
                     try { form.getTextField(fieldKey).setText(textValue); } catch(e) {}
                 });
@@ -173,7 +176,6 @@
                 const blob = new Blob([pdfBytes], { type: "application/pdf" });
                 const localUrl = URL.createObjectURL(blob);
 
-                // Instantly triggers a clean system save download command for this document
                 const a = document.createElement('a');
                 a.href = localUrl;
                 a.download = `${fullNamePrefix}_${formFileName}`;
@@ -181,16 +183,16 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(localUrl);
-
-            } catch (err) {
-                status.style.color = "red";
-                status.innerText = `❌ Error processing [${formFileName}]: ${err.message}`;
-                return;
             }
-        }
 
-        status.style.color = "var(--cbus)";
-        status.innerText = "✅ Batch process complete! Check your computer's Downloads folder.";
+            status.style.color = "var(--cbus)";
+            status.innerText = "✅ Batch process complete! Checked files saved to Downloads folder.";
+
+        } catch (err) {
+            status.style.color = "red";
+            status.innerText = `❌ Error: ${err.message}`;
+            alert(`Engine Interrupted: ${err.message}`);
+        }
     }
 </script>
 </body>
