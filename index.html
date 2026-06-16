@@ -29,15 +29,15 @@
     <h2 style="color:var(--cbus); text-align:center; margin-top:0;">🏗️ Document Assistant</h2>
     
     <div class="grid">
-        <div class="full"><label>Member Number</label><input type="text" id="m_no"></div>
-        <div><label>Given Name(s)</label><input type="text" id="gn"></div>
-        <div><label>Family Name</label><input type="text" id="fn"></div>
+        <div class="full"><label>Member Number</label><input type="text" id="m_no" autocomplete="off"></div>
+        <div><label>Given Name(s)</label><input type="text" id="gn" autocomplete="off"></div>
+        <div><label>Family Name</label><input type="text" id="fn" autocomplete="off"></div>
         <div class="full"><label>Date of Birth</label><input type="date" id="dob"></div>
-        <div class="full"><label>Tax File Number</label><input type="tel" id="tfn"></div>
-        <div class="full"><label>Mobile Number</label><input type="tel" id="mob"></div>
-        <div class="full"><label>Email Address</label><input type="email" id="eml"></div>
-        <div class="full"><label>Street Address</label><input type="text" id="addr"></div>
-        <div><label>Suburb</label><input type="text" id="sub"></div>
+        <div class="full"><label>Tax File Number</label><input type="tel" id="tfn" autocomplete="off"></div>
+        <div class="full"><label>Mobile Number</label><input type="tel" id="mob" autocomplete="off"></div>
+        <div class="full"><label>Email Address</label><input type="email" id="eml" autocomplete="off"></div>
+        <div class="full"><label>Street Address</label><input type="text" id="addr" autocomplete="off"></div>
+        <div><label>Suburb</label><input type="text" id="sub" autocomplete="off"></div>
         <div><label>State</label>
             <select id="st">
                 <option value="QLD">QLD</option>
@@ -50,7 +50,7 @@
                 <option value="NT">NT</option>
             </select>
         </div>
-        <div class="full"><label>Postcode</label><input type="tel" id="pc"></div>
+        <div class="full"><label>Postcode</label><input type="tel" id="pc" autocomplete="off"></div>
     </div>
 
     <div class="form-selector">
@@ -114,40 +114,37 @@
 
             const dobVal = document.getElementById('dob').value || "";
             let y = "", m = "", d = "";
-            if (dobVal) {
-                const parts = dobVal.includes('-') ? dobVal.split('-') : dobVal.split('/');
-                if (parts.length === 3) {
-                    if (parts[0].length === 4) { y = parts[0]; m = parts[1]; d = parts[2]; } 
-                    else { d = parts[0]; m = parts[1]; y = parts[2]; }
-                }
+            if (dobVal && dobVal.includes('-')) {
+                const parts = dobVal.split('-');
+                y = parts[0]; m = parts[1]; d = parts[2];
             }
 
             const tfn = (document.getElementById('tfn').value || "").replace(/\s/g, '');
-            
+            const mNo = (document.getElementById('m_no').value || "").trim();
+            const mob = (document.getElementById('mob').value || "").trim();
+            const eml = (document.getElementById('eml').value || "").trim();
+            const addr = (document.getElementById('addr').value || "").trim();
+            const sub = (document.getElementById('sub').value || "").trim();
+            const st = document.getElementById('st').value;
+            const pc = (document.getElementById('pc').value || "").trim();
+
             const now = new Date();
             const curD = String(now.getDate()).padStart(2, '0');
             const curM = String(now.getMonth() + 1).padStart(2, '0');
             const curYYYY = String(now.getFullYear());
             const curYY = curYYYY.substring(2);
 
-            const data = {
-                m: document.getElementById('m_no').value || "", gn, fn,
-                mob: document.getElementById('mob').value || "", eml: document.getElementById('eml').value || "",
-                addr: document.getElementById('addr').value || "", sub: document.getElementById('sub').value || "",
-                st: document.getElementById('st').value || "QLD", pc: document.getElementById('pc').value || ""
-            };
-
             const masterMap = {
-                'Cbus member number': data.m, 'Member number': data.m, 'Cbus Super member number': data.m,
-                '8039653-member_number': data.m, '8138573-member_number': data.m,
-                'Given names': data.gn, 'Given name(s)': data.gn, 'First names': data.gn, 'Family name': data.fn,
+                'Cbus member number': mNo, 'Member number': mNo, 'Cbus Super member number': mNo,
+                '8039653-member_number': mNo, '8138573-member_number': mNo,
+                'Given names': gn, 'Given name(s)': gn, 'First names': gn, 'Family name': fn,
                 'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
-                'Residential address': data.addr, 'Residential address (compulsory)': data.addr, 'Street Number Name RES': data.addr,
-                'Street Number and Name': data.addr, 'Street Name': data.addr, 'Street Number': data.addr,
-                'Suburb/town': data.sub, 'Suburb/town RES': data.sub, 'step 2 - resid suburb/town': data.sub,
-                'Postcode': data.pc, 'Postcode RES': data.pc, 'step 2 - resid postcode': data.pc, 'State': data.st, 'State RES': data.st,
-                'Mobile': data.mob, 'mobile': data.mob, 'mobile1': data.mob, 'Telephone mobile': data.mob, 'step 2 - Telephone mobile': data.mob,
-                'Email address': data.eml, 'Email Address': data.eml, 'email address': data.eml, 'Step 2 - email address': data.eml,
+                'Residential address': addr, 'Residential address (compulsory)': addr, 'Street Number Name RES': addr,
+                'Street Number and Name': addr, 'Street Name': addr, 'Street Number': addr,
+                'Suburb/town': sub, 'Suburb/town RES': sub, 'step 2 - resid suburb/town': sub,
+                'Postcode': pc, 'Postcode RES': pc, 'step 2 - resid postcode': pc, 'State': st, 'State RES': st,
+                'Mobile': mob, 'mobile': mob, 'mobile1': mob, 'Telephone mobile': mob, 'step 2 - Telephone mobile': mob,
+                'Email address': eml, 'Email Address': eml, 'email address': eml, 'Step 2 - email address': eml,
                 'Tax file number (TFN)': tfn, 'TFN1': tfn.substring(0,3), 'TFN2': tfn.substring(3,6), 'TFN3': tfn.substring(6,9),
                 'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY, 'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
                 'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curYY
@@ -162,14 +159,16 @@
                     throw new Error(`Could not download [${formFileName}] from GitHub folder.`);
                 }
                 
-                const arrayBuffer = await pdfResponse.arrayBuffer();
+                const arrayBuffer = await pdfResponse.ok ? await pdfResponse.arrayBuffer() : null;
+                if (!arrayBuffer) throw new Error("Empty data array returned.");
+                
                 status.innerText = `⚙️ Auto-completing fields for: ${formFileName}...`;
 
                 const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
                 const form = pdfDoc.getForm();
 
-                Object.entries(masterMap).forEach(([fieldKey, textValue]) => {
-                    try { form.getTextField(fieldKey).setText(textValue); } catch(e) {}
+                Object.keys(masterMap).forEach((fieldKey) => {
+                    try { form.getTextField(fieldKey).setText(masterMap[fieldKey]); } catch(e) {}
                 });
 
                 const pdfBytes = await pdfDoc.save();
