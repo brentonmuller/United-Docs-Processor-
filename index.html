@@ -20,7 +20,11 @@
         .form-item input[type="checkbox"] { width: 26px; height: 26px; margin-right: 15px; accent-color: var(--cbus); cursor: pointer; }
         .btn-run { width: 100%; padding: 20px; background: var(--cbus); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 25px; cursor: pointer; }
         .btn-run:hover { background: #007a45; }
+        .btn-clear { width: 100%; padding: 15px; background: #e0e0e0; color: #333; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        .btn-clear:hover { background: #ccc; }
         #status { text-align: center; margin-top: 20px; font-weight: bold; color: var(--cbus); font-size: 14px; min-height: 20px; }
+        .info-box { margin-top: 15px; padding: 12px; background: #eef7f2; border-left: 4px solid var(--cbus); border-radius: 4px; font-size: 13px; color: #333; line-height: 1.4; }
+        #diagnostic-box { display: none; background: #1e1e1e; color: #00ff66; padding: 15px; border-radius: 8px; margin-top: 20px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; text-align: left; border: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -35,8 +39,10 @@
         <div class="full"><label>Date of Birth</label><input type="date" id="dob"></div>
         <div class="full"><label>Tax File Number</label><input type="tel" id="tfn" autocomplete="off"></div>
         <div class="full"><label>Mobile Number</label><input type="tel" id="mob" autocomplete="off"></div>
+        <div class="full"><label>Home Phone</label><input type="tel" id="tel_home" placeholder="e.g. 0398765432" autocomplete="off"></div>
         <div class="full"><label>Email Address</label><input type="email" id="eml" autocomplete="off"></div>
-        <div class="full"><label>Street Address</label><input type="text" id="addr" autocomplete="off"></div>
+        
+        <div class="full" style="margin-top: 10px; border-top: 1px solid #ddd; padding-top: 15px;"><label>Residential Street Address</label><input type="text" id="addr" autocomplete="off"></div>
         <div><label>Suburb</label><input type="text" id="sub" autocomplete="off"></div>
         <div><label>State</label>
             <select id="st">
@@ -51,13 +57,30 @@
             </select>
         </div>
         <div class="full"><label>Postcode</label><input type="tel" id="pc" autocomplete="off"></div>
+
+        <div class="full" style="margin-top: 10px; border-top: 1px solid #ddd; padding-top: 15px;"><label>Postal Street Address</label><input type="text" id="postal_addr" autocomplete="off"></div>
+        <div><label>Postal Suburb</label><input type="text" id="postal_sub" autocomplete="off"></div>
+        <div><label>Postal State</label>
+            <select id="postal_st">
+                <option value="">-- Same as Residential --</option>
+                <option value="QLD">QLD</option>
+                <option value="NSW">NSW</option>
+                <option value="VIC">VIC</option>
+                <option value="WA">WA</option>
+                <option value="SA">SA</option>
+                <option value="TAS">TAS</option>
+                <option value="ACT">ACT</option>
+                <option value="NT">NT</option>
+            </select>
+        </div>
+        <div class="full"><label>Postal Postcode</label><input type="tel" id="postal_pc" autocomplete="off"></div>
     </div>
 
     <div class="form-selector">
         <label style="font-size: 12px; color: #444; font-weight: bold;">Select Forms to Auto-Complete Simultaneously:</label>
         <div id="formList">
             <div class="category-title">Accumulation Super Forms</div>
-		<label class="form-item"><input type="checkbox" value="Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> Transfer Existing Insurance</label>
+            <label class="form-item"><input type="checkbox" value="Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf"> Transfer Existing Insurance</label>
             <label class="form-item"><input type="checkbox" value="Change-Details-Form.pdf"> Change of Details</label>
             <label class="form-item"><input type="checkbox" value="Change-Occupation-Form.pdf"> Change Occupation Category</label>
             <label class="form-item"><input type="checkbox" value="App-Increase-Cover-Living-Events.pdf"> Life Event Insurance Change</label>
@@ -89,7 +112,15 @@
     </div>
 
     <button class="btn-run" onclick="runBatchProcessing()">🚀 Generate All Selected Forms</button>
+    <button class="btn-clear" onclick="clearAllFields()">🧹 Clear All Fields</button>
     <div id="status">Ready.</div>
+    
+    <!-- Diagnostics logger view -->
+    <div id="diagnostic-box"></div>
+
+    <div class="info-box">
+        ⚙️ <strong>Pristine Baseline Active:</strong> This baseline runs exact mapping matching. No loose or fuzzy wildcards are used. Isolation rules are applied per-form to prevent incorrect field data population.
+    </div>
 </div>
 
 <script>
@@ -97,10 +128,41 @@
     const REPO_NAME = "united-docs-processor-";
     const BASE_DATA_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${REPO_NAME}/main/forms/`;
 
+    function clearAllFields() {
+        const fieldsToClear = ['m_no', 'gn', 'fn', 'dob', 'tfn', 'mob', 'tel_home', 'eml', 'addr', 'sub', 'pc', 'postal_addr', 'postal_sub', 'postal_pc'];
+        fieldsToClear.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        });
+        
+        const st = document.getElementById('st');
+        if (st) st.selectedIndex = 0;
+        
+        const postalSt = document.getElementById('postal_st');
+        if (postalSt) postalSt.selectedIndex = 0;
+        
+        const checkboxes = document.querySelectorAll('#formList input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        
+        const status = document.getElementById('status');
+        if (status) {
+            status.style.color = "var(--cbus)";
+            status.innerText = "Ready.";
+        }
+        
+        if (diagBox) {
+            diagBox.style.display = "none";
+            diagBox.innerHTML = "";
+        }
+    }
+
     async function runBatchProcessing() {
         const status = document.getElementById('status');
+        const diagBox = document.getElementById('diagnostic-box');
         status.style.color = "var(--cbus)";
         status.innerText = "🔄 Starting engine...";
+        diagBox.style.display = "none";
+        diagBox.innerHTML = "";
 
         try {
             const selected = Array.from(document.querySelectorAll('#formList input:checked'));
@@ -109,15 +171,26 @@
                 return alert("Please select at least one form to generate.");
             }
 
+            // Retrieve and prepare form variables
             const gn = (document.getElementById('gn').value || "").trim();
             const fn = (document.getElementById('fn').value || "").trim();
             const fullNamePrefix = `${gn} ${fn}`.trim() || "Member_Form";
 
+            // Parse Date of Birth with fallback for browser discrepancy
             const dobVal = document.getElementById('dob').value || "";
             let y = "", m = "", d = "";
-            if (dobVal && dobVal.includes('-')) {
-                const parts = dobVal.split('-');
-                y = parts[0]; m = parts[1]; d = parts[2];
+            if (dobVal) {
+                if (dobVal.includes('-')) {
+                    const parts = dobVal.split('-');
+                    y = parts[0]; m = parts[1]; d = parts[2];
+                } else if (dobVal.includes('/')) {
+                    const parts = dobVal.split('/');
+                    if (parts[0].length === 4) {
+                        y = parts[0]; m = parts[1]; d = parts[2];
+                    } else {
+                        d = parts[0]; m = parts[1]; y = parts[2];
+                    }
+                }
             }
 
             const tfn = (document.getElementById('tfn').value || "").replace(/\s/g, '');
@@ -128,27 +201,985 @@
             const sub = (document.getElementById('sub').value || "").trim();
             const st = document.getElementById('st').value;
             const pc = (document.getElementById('pc').value || "").trim();
+            const telHome = (document.getElementById('tel_home').value || "").trim();
+
+            let postalAddr = (document.getElementById('postal_addr').value || "").trim();
+            let postalSub = (document.getElementById('postal_sub').value || "").trim();
+            let postalSt = document.getElementById('postal_st').value; 
+            let postalPc = (document.getElementById('postal_pc').value || "").trim();
+
+            // Populate postal details from residential address if empty/defaulted
+            if (!postalAddr) {
+                postalAddr = addr;
+                postalSub = sub;
+                postalSt = st;
+                postalPc = pc;
+            }
+            if (!postalSt) {
+                postalSt = st;
+            }
+
+            // Segment Home Phone into: Area Code (2 digits), Prefix (4 digits), Suffix (4 digits)
+            const cleanHome = telHome.replace(/[^0-9]/g, '');
+            let homeArea = "", homePrefix = "", homeSuffix = "";
+            if (cleanHome.length === 10) {
+                homeArea = cleanHome.substring(0, 2);
+                homePrefix = cleanHome.substring(2, 6);
+                homeSuffix = cleanHome.substring(6, 10);
+            } else if (cleanHome.length === 8) {
+                homePrefix = cleanHome.substring(0, 4);
+                homeSuffix = cleanHome.substring(4, 8);
+            } else {
+                homeArea = cleanHome.substring(0, 2);
+                homePrefix = cleanHome.substring(2, 6);
+                homeSuffix = cleanHome.substring(6);
+            }
+
+            // Segment Mobile Phone into: Prefix (4 digits), Segment 1 (3 digits), Segment 2 (3 digits)
+            const cleanMob = mob.replace(/[^0-9]/g, '');
+            let mobArea = "", mobPrefix = "", mobSuffix = "";
+            if (cleanMob.length === 10) {
+                mobArea = cleanMob.substring(0, 4);
+                mobPrefix = cleanMob.substring(4, 7);
+                mobSuffix = cleanMob.substring(7, 10);
+            } else {
+                mobArea = cleanMob.substring(0, 4);
+                mobPrefix = cleanMob.substring(4, 7);
+                mobSuffix = cleanMob.substring(7);
+            }
 
             const now = new Date();
             const curD = String(now.getDate()).padStart(2, '0');
             const curM = String(now.getMonth() + 1).padStart(2, '0');
             const curYYYY = String(now.getFullYear());
             const curYY = curYYYY.substring(2);
+            
+            // Format Day with suffix (e.g., "24th")
+            const getDaySuffix = (day) => {
+                let suffix = 'th';
+                if (day === 1 || day === 21 || day === 31) suffix = 'st';
+                else if (day === 2 || day === 22) suffix = 'nd';
+                else if (day === 3 || day === 23) suffix = 'rd';
+                return `${day}${suffix}`;
+            };
+            const curDayWithSuffix = getDaySuffix(now.getDate());
 
-            const masterMap = {
-                'Cbus member number': mNo, 'Member number': mNo, 'Cbus Super member number': mNo,
-                '8039653-member_number': mNo, '8138573-member_number': mNo,
-                'Given names': gn, 'Given name(s)': gn, 'First names': gn, 'Family name': fn,
-                'Date of birth day': d, 'Date of birth month': m, 'Date of birth year': y,
-                'Residential address': addr, 'Residential address (compulsory)': addr, 'Street Number Name RES': addr,
-                'Street Number and Name': addr, 'Street Name': addr, 'Street Number': addr,
-                'Suburb/town': sub, 'Suburb/town RES': sub, 'step 2 - resid suburb/town': sub,
-                'Postcode': pc, 'Postcode RES': pc, 'step 2 - resid postcode': pc, 'State': st, 'State RES': st,
-                'Mobile': mob, 'mobile': mob, 'mobile1': mob, 'Telephone mobile': mob, 'step 2 - Telephone mobile': mob,
-                'Email address': eml, 'Email Address': eml, 'email address': eml, 'Step 2 - email address': eml,
-                'Tax file number (TFN)': tfn, 'TFN1': tfn.substring(0,3), 'TFN2': tfn.substring(3,6), 'TFN3': tfn.substring(6,9),
-                'decDD': curD, 'decMM': curM, 'decYYYY': curYYYY, 'Step 3 date': curD, 'Step 3 date MM': curM, 'Step 3 date YY': curYY,
-                'Combine - Declaration DD': curD, 'Combine - Declaration MM': curM, 'Combine - Declaration YY': curYY
+            // Format Month and Year as full text (e.g. "June 2026")
+            const curMonthAndYear = now.toLocaleString('en-AU', { month: 'long', year: 'numeric' });
+
+            // Split Residential Address into Street Number and Street Name (with fallback to full address)
+            let resNum = addr, resName = addr;
+            if (addr.includes(' ')) {
+                const spaceIndex = addr.indexOf(' ');
+                resNum = addr.substring(0, spaceIndex).trim();
+                resName = addr.substring(spaceIndex + 1).trim();
+            }
+
+            // Split Postal Address into Street Number and Street Name (with fallback to full address)
+            let postNum = postalAddr, postName = postalAddr;
+            if (postalAddr.includes(' ')) {
+                const spaceIndex = postalAddr.indexOf(' ');
+                postNum = postalAddr.substring(0, spaceIndex).trim();
+                postName = postalAddr.substring(spaceIndex + 1).trim();
+            }
+
+            // Normalization helper for case-insensitive/whitespace-insensitive field mapping
+            const getCleanKey = (str) => {
+                if (!str) return '';
+                return String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
+            };
+
+            // Container for strict, form-isolated exact mappings
+            const formSpecificMaps = {
+                // 1. Binding Death Benefit Nomination (Accumulation)
+                'Binding-Death-Benefit-Nomination-Form.pdf': {
+                    'Cbus member number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile': mob,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Email address': eml,
+
+                    'Step 3 date': curD,
+                    'Step 3 date MM': curM,
+                    'Step 3 date YY': curYY,
+
+                    '3 Step 3 date': curD,
+                    '3 Step 3 date MM': curM,
+                    '3 Step 3 date YY': curYY,
+
+                    '4 Step 3 date': curD,
+                    '4 Step 3 date MM': curM,
+                    '4 Step 3 date YY': curYY
+                },
+
+                // 2. Salary Sacrifice Form
+                'Salary-Sacrifice-Form.pdf': {
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Residential address': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Postal address if different': postalAddr,
+                    'Suburb/town 2': postalSub,
+                    'State 2': postalSt,
+                    'Postcode 2': postalPc,
+                    'Cbus member number': mNo,
+
+                    'Member declaration date DD': curD,
+                    'Member declaration date MM': curM,
+                    'Member declaration date YY': curYY
+                },
+
+                // 3. SIS Binding Death Benefit Nomination (Income Stream)
+                'SIS-Binding-Death-Nomination-Form.pdf': {
+                    'Cbus member number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile': mob,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'postal Street Name': postalAddr,
+                    'postal Suburb/town': postalSub,
+                    'postal State': postalSt,
+                    'postal Postcode': postalPc,
+                    'Email address': eml,
+
+                    'Sign day binding': curD,
+                    'Sign month binding': curM,
+                    'Sign year binding': curYY,
+
+                    'Witness 1 date day': curD,
+                    'Witness 1 date month': curM,
+                    'Witness 1 date year': curYY,
+
+                    'Witness 2 date day': curD,
+                    'Witness 2 date year': curYY
+                },
+
+                // 4. Change of details Form
+                'Change-Details-Form.pdf': {
+                    'Cbus Super member number': mNo,
+                    'Cbus member number': mNo,
+                    'Member number': mNo,
+                    'MEMBER number': mNo,
+                    'Given names': gn,
+                    'Given name(s)': gn,
+                    'First names': gn,
+                    'Family name': fn,
+                    'Last name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Date of Birth DD': d,
+                    'Date of Birth MM': m,
+                    'Date of Birth YY': y,
+                    'Residential address': addr,
+                    'Street Name': addr,
+                    'Street name': addr,
+                    'Street Number': addr,
+                    'Street Number and Name': addr,
+                    'Street number and name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Postal address': postalAddr,
+                    'Postal address if different': postalAddr,
+                    'Street Number 2': postalAddr,
+                    'Postal address street': postalAddr,
+                    'Street number and name postal': postalAddr,
+                    'Posal - Street name': postalAddr,
+                    'Suburb/town 2': postalSub,
+                    'State 2': postalSt,
+                    'Postcode 2': postalPc,
+                    'Posal - Suburb': postalSub,
+                    'Posal - State': postalSt,
+                    'Postcode - Posal': postalPc,
+                    'Email address': eml,
+                    'Email Address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile1': mob,
+                    'mobile': mob,
+                    'Mobile': mob,
+                    'TFN': tfn,
+                    'Tax file number': tfn,
+                    'TFN1': tfn.substring(0, 3),
+                    'TFN2': tfn.substring(3, 6),
+                    'TFN3': tfn.substring(6, 9),
+                    
+                    'residential address': addr,
+                    'Step 2 - resid suburb/town': sub,
+                    'Step 2 - resid state': st,
+                    'Step 2 - resid postcode': pc,
+                    
+                    'Step 2 - postal addr': postalAddr,
+                    'Step 2 - postal suburb/town': postalSub,
+                    'Step 2 - postal state': postalSt,
+                    'Step 2 - postal postcode': postalPc,
+                    
+                    'Step 2 - email address': eml,
+                    
+                    'step 2 - Telephone home': homeArea,
+                    'step 2 - Telephone home1': homePrefix,
+                    'step 2 - Telephone home2': homeSuffix,
+                    
+                    'step 2 - Telephone mobile': mobArea,
+                    'step 2 - Telephone mobile1': mobPrefix,
+                    'step 2 - Telephone mobile2': mobSuffix,
+                    
+                    '2B - First names': gn,
+                    '2B - Family name': fn,
+                    '2B - Date of birth day': d,
+                    '2B - Date of birth month': m,
+                    '2B - Date of birth year': y,
+
+                    'Step 4 - DD': curD,
+                    'Step 4 - MM': curM,
+                    'Step 4 - YYYY': curYY,
+                    'Step 4 - YY': curYY,
+                    'decDD': curD,
+                    'decMM': curM,
+                    'decYY': curYY
+                },
+
+                // 5. Change Occupation Category Form
+                'Change-Occupation-Form.pdf': {
+                    'Cbus member number': mNo,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile1': mob,
+                    'Email address': eml,
+                    'Street Number': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Postal Address if different': postalAddr,
+                    'Suburb/town 2': postalSub,
+                    'State 2': postalSt,
+                    'Postcode 2': postalPc,
+
+                    'decDD': curD,
+                    'decMM': curM,
+                    'decYYYY': curYY
+                },
+
+                // 6. Compassionate Grounds Benefit Payment Application
+                'Compassionate-Grounds-form.pdf': {
+                    'Cbus member number': mNo,
+                    'First names': gn,
+                    'Last name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Street Name Postal': postalAddr,
+                    'Suburb/town Postal': postalSub,
+                    'State Postal': postalSt,
+                    'Postcode Postal': postalPc,
+                    'Email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile1': mob,
+                    'TFN': tfn.substring(0, 3), // Fixed segmented block conflict on Box 1
+                    'TFN1': tfn.substring(3, 6),
+                    'TFN2': tfn.substring(6, 9),
+                    'Declaration Day': curD,
+                    'Declaration Month': curM,
+                    'Declaration year': curYY
+                },
+
+                // 7. KiwiSaver Transfer Form
+                'Kiwi-Saver-Form.pdf': {
+                    'Given names': gn,
+                    'Family names': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'TFN': tfn,
+                    'TFN1': tfn.substring(0, 3), // Segmented TFN mapped correctly
+                    'TFN2': tfn.substring(3, 6),
+                    'TFN3': tfn.substring(6, 9),
+                    'New Zealand Phone1': mob,
+                    'Last known address in Australia': addr,
+                    'Last known address in Australia Suburb': sub,
+                    'State in Australia': st,
+                    'Postcode in Australia': pc,
+                    'Cbus Member Number': mNo,
+                    'Declaration Day': curD,
+                    'Declaration Month': curM,
+                    'Declaration year': curYY,
+                    'Signatory name': `${gn} ${fn}`.trim()
+                },
+
+                // 8. General Statutory Declaration
+                'General-Statutory-Declaration.pdf': {
+                    'Provide your name': `${gn} ${fn}`.trim(),
+                    'Provide your occupation': '',
+                    'Provide your address': `${addr}, ${sub}`.trim(),
+                    'Provide your state or territory': `${st} ${pc}`.trim(),
+                    
+                    // The field names in this PDF are misaligned with their visual labels:
+                    'Declaration day': `${sub}, ${st}`.trim(),       // Field is physically after "Declared at" (Place)
+                    'Declaration month': curDayWithSuffix,          // Field is physically after "on" (Day, e.g. "24th")
+                    'Declaration year': curMonthAndYear             // Field is physically after "of" (Month & Year, e.g. "June 2026")
+                },
+
+                // 9. Apply for Income Protection Cover
+                'Application-Apply-IP-Cover-Industry.pdf': {
+                    'Join Cbus Member Number': mNo,
+                    'Given name(s)': gn,
+                    'Family name': fn,
+                    'Date of Birth DD': d,
+                    'Date of Birth MM': m,
+                    'Date of Birth YY': y, // Fixed birth year (was curYY)
+                    'Street name': addr,
+                    'Suburb': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Posal - Street name': postalAddr,
+                    'Posal - Suburb': postalSub,
+                    'Posal - State': postalSt,
+                    'Posal - Postcode': postalPc,
+                    'Email Address': eml,
+                    'Home phone': homeArea,
+                    'Home phone 1': homePrefix,
+                    'Home phone 2': homeSuffix,
+                    'Mobile': mobArea,     // Segmented mobile number mapping
+                    'Mobile2': mobPrefix,
+                    'Mobile3': mobSuffix,
+                    'Declaration DD': curD,
+                    'Declaration MM': curM,
+                    'Declaration YY': curYY
+                },
+
+                // 10. Notice of Intent to Claim Tax Deduction
+                'Cbus-how-to-claim-tax-deduction-super-contributions.pdf': {
+                    'Cbus Member Number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Number / PO Box': resNum,
+                    'Street Name': resName,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Postal Street Name or PO Box': postalAddr,
+                    'Postal Suburb/town': postalSub,
+                    'Postal State': postalSt,
+                    'Postal Postcode': postalPc,
+                    'Email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'Mobile': mob,
+                    'Declaration date DD': curD,
+                    'Declaration date MM': curM,
+                    'Declaration date YY': curYY
+                },
+
+                // 11. Life Event Insurance Change
+                'App-Increase-Cover-Living-Events.pdf': {
+                    'Media Super member number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Number': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Postal Street Number': postalAddr,
+                    'Postal Suburb/town': postalSub,
+                    'Postal State': postalSt,
+                    'Postal Postcode': postalPc,
+                    'Email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile1': mob,
+                    'decDD': curD,
+                    'decMM': curM,
+                    'decYYYY': curYY // Corrected character-limit restriction to 2 digits
+                },
+
+                // 12. Withdraw Your Super
+                'super-withdrawal-form.pdf': {
+                    'Member number': mNo,
+                    'First names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Number': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Postal Address if different': postalAddr,
+                    'Suburb/town 2': postalSub,
+                    'State 2': postalSt,
+                    'Postcode 2': postalPc,
+                    'Email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'Telephone mobile': mob,
+                    'TFN1': tfn.substring(0, 3),
+                    'TFN2': tfn.substring(3, 6),
+                    'TFN3': tfn.substring(6, 9),
+                    '12 form 1 sign DD': curD,
+                    '12 form 1 sign MM': curM,
+                    '12 form 1 sign YY': curYY
+                },
+
+                // 13. Change My Insurance (Industry Super)
+                'Change-Insurance-Form-Industry-Super.pdf': {
+                    'Member Number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Number': addr,
+                    'Street Number 2': postalAddr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Suburb/town 2': postalSub,
+                    'State 2': postalSt,
+                    'Postcode 2': postalPc,
+                    'Email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile1': mob,
+                    'Declaration DD': curD,
+                    'Declaration MM': curM,
+                    'Declaration YY': curYY
+                },
+
+                // 14. Combine Your Super into Cbus
+                'Combine-Form.pdf': {
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Number': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Email Address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile1': mob,
+                    'TFN1': tfn.substring(0, 3),
+                    'TFN2': tfn.substring(3, 6),
+                    'TFN3': tfn.substring(6, 9),
+                    'Combine Form Membership or acount number': mNo,
+                    'Combine - Declaration DD': curD,
+                    'Combine - Declaration MM': curM,
+                    'Combine - Declaration YY': curYY
+                },
+
+                // 15. Join Cbus Industry Super
+                'join-industry-form.pdf': {
+                    'MEMBER number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Number and Name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Postal address street': postalAddr,
+                    'Postal Suburb/town': postalSub,
+                    'Postal State': postalSt,
+                    'Postal Postcode': postalPc,
+                    'Email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile1': mob,
+                    'TFN1': tfn.substring(0, 3),
+                    'TFN2': tfn.substring(3, 6),
+                    'TFN3': tfn.substring(6, 9),
+                    'Join - Declaration DD': curD,
+                    'Join - Declaration MM': curM,
+                    'Join - Declaration YY': curYY
+                },
+
+                // 16. Pay My Super Into Cbus (Employer Choice)
+                'I-want-my-super-paid-into-Cbus.pdf': {
+                    '8039653-Given_Names': gn,
+                    '8039653-Family_Name': fn,
+                    '8039653-member_number': mNo,
+                    '8039653-TFN1': tfn.substring(0, 3),
+                    '8039653-TFN2': tfn.substring(3, 6),
+                    '8039653-TFN3': tfn.substring(6, 9),
+                    '8039778-Sign_Date_Day': curD,
+                    '8039778-Sign_Date_Month': curM,
+                    '8039778-Sign_Date_Year': curYY
+                },
+
+                // 17. Set Up Corporate Super Account
+                'corporate-super-set-up.pdf': {
+                    'MEMBER number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Number and Name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Postal address street': postalAddr,
+                    'Postal Suburb/town': postalSub,
+                    'Postal State': postalSt,
+                    'Postal Postcode': postalPc,
+                    'Email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile1': mob,
+                    'TFN1': tfn.substring(0, 3),
+                    'TFN2': tfn.substring(3, 6),
+                    'TFN3': tfn.substring(6, 9),
+                    'Join - Declaration DD': curD,
+                    'Join - Declaration MM': curM,
+                    'Join - Declaration YY': curYY
+                },
+
+                // 18. Join Cbus Sole Trader Super
+                'join-sole-trader.pdf': {
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of Birth DD': d,
+                    'Date of Birth MM': m,
+                    'Date of Birth YY': y,
+                    'Street number and name': addr,
+                    'Suburb': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Street number and name postal': postalAddr,
+                    'Suburb postal': postalSub,
+                    'State postal': postalSt,
+                    'Postcode postal': postalPc,
+                    'Email Address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home 1': homePrefix,
+                    'Telephone home 2': homeSuffix,
+                    'Mobile': mob,
+                    'TFN1': tfn.substring(0, 3),
+                    'TFN2': tfn.substring(3, 6),
+                    'TFN3': tfn.substring(6, 9),
+                    'Join - Declaration DD': curD,
+                    'Join - Declaration MM': curM,
+                    'Join - Declaration YY': curYY
+                },
+
+                // 19. Transfer Existing Insurance
+                'Application-to-Transfer-Existing-Insurance-cover-transfer-form.pdf': {
+                    'Cbus Super member number': mNo,
+                    'Cbus member number': mNo,
+                    'Member Number': mNo,
+                    'MEMBER number': mNo,
+                    'Member number': mNo,
+                    'Given names': gn,
+                    'Given name(s)': gn,
+                    'Family name': fn,
+                    'Last name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Date of Birth DD': d,
+                    'Date of Birth MM': m,
+                    'Date of Birth YY': y,
+                    'Residential address': addr,
+                    'Street Name': addr,
+                    'Street name': addr,
+                    'Street Number': addr,
+                    'Street Number and Name': addr,
+                    'Street number and name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Postal address': postalAddr,
+                    'Postal address if different': postalAddr,
+                    'Street Number 2': postalAddr,
+                    'Postal address street': postalAddr,
+                    'Street number and name postal': postalAddr,
+                    'Posal - Street name': postalAddr,
+                    'Suburb/town 2': postalSub,
+                    'State 2': postalSt,
+                    'Postcode 2': postalPc,
+                    'Posal - Suburb': postalSub,
+                    'Posal - State': postalSt,
+                    'Posal - Postcode': postalPc,
+                    'Email address': eml,
+                    'Email Address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile1': mob,
+                    'mobile': mob,
+                    'Mobile': mob,
+                    'decDD': curD,
+                    'Declaration DD': curD,
+                    'Join - Declaration DD': curD,
+                    'Step 4 date': curD,
+                    'Step 4 date DD': curD,
+                    'Declaration date DD': curD,
+                    '12 form 1 sign DD': curD,
+                    'decMM': curM,
+                    'Declaration MM': curM,
+                    'Join - Declaration MM': curM,
+                    'Step 4 date MM': curM,
+                    'Declaration date MM': curM,
+                    '12 form 1 sign MM': curM,
+                    'decYY': curYY,
+                    'decYYYY': curYY,
+                    'Declaration YY': curYY,
+                    'Join - Declaration YY': curYY,
+                    'Step 4 date YY': curYY,
+                    'Step 4 date YYYY': curYY,
+                    'Declaration date YY': curYY,
+                    '12 form 1 sign YY': curYY
+                },
+
+                // 20. Third Party Authority
+                'Third-Party-Authority-Form.pdf': {
+                    'Cbus member number': mNo,
+                    'Cbus income stream number': mNo,
+                    'First names': gn,
+                    'Last name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Number Name RES': addr,
+                    'Suburb/town RES': sub,
+                    'State RES': st,
+                    'Postcode RES': pc,
+                    'Street Number Name POST': postalAddr,
+                    'Suburb/town POST': postalSub,
+                    'State POST': postalSt,
+                    'Postcode POST': postalPc,
+                    'Email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'Telephone mobile': mob,
+                    'Signatory date day': curD,
+                    'Signatory date month': curM,
+                    'Signatory date year': curYY
+                },
+
+                // 21. Join Cbus Super Income Stream
+                'cbus-super-income-stream-join-form.pdf': {
+                    'Cbus super member number': mNo,
+                    'Cbus member number': mNo,
+                    'Member number': mNo,
+                    'Cbus Super or Media Super member number, if known': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Residential address': addr,
+                    'Street Name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'postal Street Name': postalAddr,
+                    'postal Suburb/town': postalSub,
+                    'postal State': postalSt,
+                    'postal Postcode': postalPc,
+                    'Email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile': mob,
+                    '12 form 1 sign DD': curD,
+                    '12 form 1 sign MM': curM,
+                    '12 form 1 sign YY': curYY
+                },
+
+                // 22. Change Your Income Stream Details
+                'Change-Income-Stream-Details-Form.pdf': {
+                    'Cbus member number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Number Name RES': addr,
+                    'Suburb/town RES': sub,
+                    'State RES': st,
+                    'Postcode RES': pc,
+                    'Street Number Name POST': postalAddr,
+                    'Suburb/town POST': postalSub,
+                    'State POST': postalSt,
+                    'Postcode POST': postalPc,
+                    'Email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile1': mob,
+                    'Step 6 - DD': curD,
+                    'Step 6 - MM': curM,
+                    'Step 6 - YYYY': curYY // Adjusted character-limit restriction to 2 digits ("26")
+                },
+
+                // 23. SIS Binding Death Benefit Nomination
+                'SIS-Binding-Death-Nomination-Form.pdf': {
+                    'Cbus member number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile': mob,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'postal Street Name': postalAddr,
+                    'postal Suburb/town': postalSub,
+                    'postal State': postalSt,
+                    'postal Postcode': postalPc,
+                    'Email address': eml,
+
+                    'Sign day binding': curD,
+                    'Sign month binding': curM,
+                    'Sign year binding': curYY,
+
+                    'Witness 1 date day': curD,
+                    'Witness 1 date month': curM,
+                    'Witness 1 date year': curYY,
+
+                    'Witness 2 date day': curD,
+                    'Witness 2 date year': curYY
+                },
+
+                // 24. Transition to Retirement PDS
+                'ttr-sis-pds.pdf': {
+                    '8050898-Given_Names': gn,
+                    '8050898-Family_Name': fn,
+                    '8050898-DOB_Day': d,
+                    '8050898-DOB_Month': m,
+                    '8050898-DOB_Year': y,
+                    '8050898-Residential_Address': addr,
+                    '8050898-Residential_Suburb': sub,
+                    '8050898-Residential_State': st,
+                    '8050898-Residential_Postcode': pc,
+                    'postal Street Name': postalAddr,
+                    'postal Suburb/town': postalSub,
+                    'postal State': postalSt,
+                    'postal Postcode': postalPc,
+                    'Email address': eml,
+                    '8050898-Home_Phone1': homeArea,
+                    '8050898-Home_Phone2': homePrefix,
+                    '8050898-Home_Phone3': homeSuffix,
+                    '8050898-Mobile': mob,
+                    '8050898-TFN1': tfn.substring(0, 3),
+                    '8050898-TFN2': tfn.substring(3, 6),
+                    '8050898-TFN3': tfn.substring(6, 9),
+                    
+                    // Primary Join Form Declaration Dates
+                    '8050902-Sign_Date_Day': curD,
+                    '8050902-Sign_Date_Month': curM,
+                    '8050902-Sign_Date_Year': curYY,
+                    
+                    // Standalone Form Declaration Dates
+                    '12 form 1 sign DD': curD,
+                    '12 form 1 sign MM': curM,
+                    '12 form 1 sign YY': curYY,
+                    'Cbus member number step 5': mNo,
+                    
+                    // Standalone Nested BDN Form Fields
+                    'Cbus super member number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile': mob,
+                    
+                    // Nested BDN Declaration Dates (Day, Month, Year)
+                    'Sign day binding': curD,
+                    'Sign month binding': curM,
+                    'Sign year binding': curYY,
+                    'Witness 1 date day': curD,
+                    'Witness 1 date month': curM,
+                    'Witness 1 date year': curYY,
+                    'Witness 2 date day': curD,
+                    'Witness 2 date month': curM,
+                    'Witness 2 date year': curYY
+                },
+
+                // 25. Fully Retired PDS
+                'fr-sis-pds.pdf': {
+                    '8050898-Given_Names': gn,
+                    '8050898-Family_Name': fn,
+                    '8050898-DOB_Day': d,
+                    '8050898-DOB_Month': m,
+                    '8050898-DOB_Year': y,
+                    '8050898-Residential_Address': addr,
+                    '8050898-Residential_Suburb': sub,
+                    '8050898-Residential_State': st,
+                    '8050898-Residential_Postcode': pc,
+                    'postal Street Name': postalAddr,
+                    'postal Suburb/town': postalSub,
+                    'postal State': postalSt,
+                    'postal Postcode': postalPc,
+                    'Email address': eml,
+                    '8050898-Home_Phone1': homeArea,
+                    '8050898-Home_Phone2': homePrefix,
+                    '8050898-Home_Phone3': homeSuffix,
+                    '8050898-Mobile': mob,
+                    '8050898-TFN1': tfn.substring(0, 3),
+                    '8050898-TFN2': tfn.substring(3, 6),
+                    '8050898-TFN3': tfn.substring(6, 9),
+                    
+                    // Primary Join Form Declaration Dates
+                    '8050902-Sign_Date_Day': curD,
+                    '8050902-Sign_Date_Month': curM,
+                    '8050902-Sign_Date_Year': curYY,
+                    
+                    // Standalone Form Declaration Dates
+                    '12 form 1 sign DD': curD,
+                    '12 form 1 sign MM': curM,
+                    '12 form 1 sign YY': curYY,
+                    'Cbus member number step 5': mNo,
+                    
+                    // Standalone Nested BDN Form Fields
+                    'Cbus super member number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'mobile': mob,
+                    
+                    // Nested BDN Declaration Dates (Day, Month, Year)
+                    'Sign day binding': curD,
+                    'Sign month binding': curM,
+                    'Sign year binding': curYY,
+                    'Witness 1 date day': curD,
+                    'Witness 1 date month': curM,
+                    'Witness 1 date year': curYY,
+                    'Witness 2 date day': curD,
+                    'Witness 2 date month': curM,
+                    'Witness 2 date year': curYY
+                },
+
+                // 26. Investment Choice Form (Income Stream)
+                'SIS-Switching-Form.pdf': {
+                    'Cbus member number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Number Name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Postal address': postalAddr,
+                    'Suburb/town postal': postalSub,
+                    'State postal': postalSt,
+                    'Postcode postal': postalPc,
+                    'email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'Mobile number 1': mob,
+                    'S8 DD': curD,
+                    'S8 MM': curM,
+                    'S8 yyyy': curYY // Adjusted character-limit restriction to 2 digits ("26")
+                },
+
+                // 27. Income Stream Withdrawal or Rollover
+                'SIS-Withdrawal-Form.pdf': {
+                    'Cbus member number': mNo,
+                    'Given names': gn,
+                    'Family name': fn,
+                    'Date of birth day': d,
+                    'Date of birth month': m,
+                    'Date of birth year': y,
+                    'Street Number Name': addr,
+                    'Suburb/town': sub,
+                    'State': st,
+                    'Postcode': pc,
+                    'Postal address': postalAddr,
+                    'Suburb/town postal': postalSub,
+                    'State postal': postalSt,
+                    'Postcode postal': postalPc,
+                    'email address': eml,
+                    'Telephone home': homeArea,
+                    'Telephone home1': homePrefix,
+                    'Telephone home2': homeSuffix,
+                    'Mobile number 1': mob,
+                    'S8 DD': curD,
+                    'S8 MM': curM,
+                    'S8 yyyy': curYY // Adjusted character-limit restriction to 2 digits ("26")
+                }
             };
 
             for (const item of selected) {
@@ -157,20 +1188,58 @@
 
                 const pdfResponse = await fetch(`${BASE_DATA_URL}${formFileName}`);
                 if (!pdfResponse.ok) {
-                    throw new Error(`Could not download [${formFileName}] from GitHub folder.`);
+                    throw new Error("Could not download template.");
                 }
                 
-                const arrayBuffer = await pdfResponse.ok ? await pdfResponse.arrayBuffer() : null;
-                if (!arrayBuffer) throw new Error("Empty data array returned.");
+                const arrayBuffer = await pdfResponse.arrayBuffer();
                 
-                status.innerText = `⚙️ Auto-completing fields for: ${formFileName}...`;
-
                 const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
                 const form = pdfDoc.getForm();
+                
+                try { if (form.hasXFA()) form.deleteXFA(); } catch(e) {}
+                try { if (form.acroForm) form.acroForm.dict.set(PDFLib.PDFName.of('NeedAppearances'), PDFLib.PDFBool.True); } catch(e) {}
 
-                Object.keys(masterMap).forEach((fieldKey) => {
-                    try { form.getTextField(fieldKey).setText(masterMap[fieldKey]); } catch(e) {}
+                const fields = form.getFields();
+
+                const activeMap = formSpecificMaps[formFileName] || {};
+                const activeMapClean = {};
+                for (const key in activeMap) {
+                    activeMapClean[getCleanKey(key)] = activeMap[key];
+                }
+
+                fields.forEach((field) => {
+                    const fieldName = field.getName();
+                    const cleanFieldName = getCleanKey(fieldName);
+                    
+                    const isTextField = field instanceof PDFLib.PDFTextField;
+                    const isCheckBox = field instanceof PDFLib.PDFCheckBox;
+                    const isDropdown = field instanceof PDFLib.PDFDropdown;
+                    const isRadioGroup = field instanceof PDFLib.PDFRadioGroup;
+
+                    try {
+                        const targetValue = activeMapClean[cleanFieldName];
+
+                        if (targetValue !== undefined && targetValue !== null && targetValue !== "") {
+                            if (isTextField) {
+                                try { if (field.isRichFormatted()) field.disableRichFormatting(); } catch(e) {}
+                                try { field.setFontSize(10); } catch(e) {}
+                                field.setText(String(targetValue));
+                            } else if (isCheckBox) {
+                                if (targetValue === true || targetValue === "checked" || targetValue === "On" || targetValue === "Yes") {
+                                    field.check();
+                                } else if (targetValue === false || targetValue === "unchecked" || targetValue === "Off" || targetValue === "No") {
+                                    field.uncheck();
+                                }
+                            } else if (isDropdown || isRadioGroup) {
+                                field.select(String(targetValue));
+                            }
+                        }
+                    } catch (e) {
+                        console.warn(`Could not fill field: "${fieldName}"`, e);
+                    }
                 });
+
+                try { form.updateFieldAppearances(); } catch(e) {}
 
                 const pdfBytes = await pdfDoc.save();
                 const blob = new Blob([pdfBytes], { type: "application/pdf" });
